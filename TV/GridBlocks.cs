@@ -39,8 +39,8 @@ namespace IngameScript
                         var textProvider = block as IMyTextSurfaceProvider;
                         if (textProvider != null)
                         {
-                            surfaces.Add(block.CustomName, new List<IMyTextSurface>());
-                            surfaceProviders.Add(block.CustomName,block);
+                            if(!surfaces.ContainsKey(block.CustomName)) surfaces.Add(block.CustomName, new List<IMyTextSurface>());
+                            if(!surfaceProviders.ContainsKey(block.CustomName)) surfaceProviders.Add(block.CustomName,block);
                             for (int i = 0; i < textProvider.SurfaceCount; i++)
                             {
                                 IMyTextSurface surface = textProvider.GetSurface(i);
@@ -81,15 +81,18 @@ namespace IngameScript
             }
             public static string GetSurfaceCustomData(string key)
             {
-                if (surfaces.Count == 0)
+                if (surfaceProviders.Count == 0)
                 {
                     GetBlocks();
                 }
+                GridInfo.Echo("GetSurfaceCustomData: " + key);
                 if (surfaceProviders.ContainsKey(key)) return surfaceProviders[key].CustomData;
+                GridInfo.Echo("GetSurfaceCustomData: " + key + " searching....");
                 foreach(var block in surfaceProviders)
                 {
                     if(block.Key.Contains(key)) return block.Value.CustomData;
                 }
+                GridInfo.Echo("GetSurfaceCustomData: " + key + " not found");
                 return "";
             }
             public static IMyShipController Couch

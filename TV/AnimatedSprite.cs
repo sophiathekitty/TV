@@ -66,7 +66,20 @@ namespace IngameScript
                     loop = true;
                 }
             }
-
+            public AnimatedSprite(string element) : base(ScreenSpriteAnchor.TopLeft, Vector2.Zero, MONOSPACE_FONT_SIZE, Vector2.Zero, Color.White, "Monospace", "", TextAlignment.LEFT, SpriteType.TEXT)
+            {
+                string[] data = element.Split('═');
+                SpriteOptions options = new SpriteOptions(data[0]);
+                cells = data[1].Split(':').ToList();
+                Position = options.position;
+                Size = options.size;
+                loop = options.loop;
+                random = options.random;
+                delay = options.delay;
+                Data = "";
+                GridInfo.Echo("AnimatedSprite: delay: " + delay.ToString());
+                GridInfo.Echo("AnimatedSprite: cells: " + cells.Count.ToString());
+            }
             // override ToMySprite
             public override MySprite ToMySprite(RectangleF _viewport)
             {
@@ -110,7 +123,7 @@ namespace IngameScript
                 return new MySprite()
                 {
                     Type = Type,
-                    Data = Data,
+                    Data = cells[currentCell],
                     Position = GetPosition(_viewport),
                     RotationOrScale = RotationOrScale,
                     Color = Color,

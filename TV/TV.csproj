@@ -38,6 +38,7 @@
   <Import Project="MDK/MDK.options.props" />
   <Import Project="MDK/MDK.paths.props" Condition="exists('MDK/MDK.paths.props')" />
   <ItemGroup>
+    <Compile Include="AnimatedScene.cs" />
     <Compile Include="AnimatedSprite.cs" />
     <Compile Include="BackgroundImage.cs" />
     <Compile Include="GridBlocks.cs" />
@@ -53,7 +54,10 @@
     <AdditionalFiles Include="Instructions.readme" />
     <AdditionalFiles Include="thumb.png" />
     <AdditionalFiles Include="MDK\whitelist.cache" />
+    <Compile Include="SceneOptions.cs" />
     <Compile Include="Screen.cs" />
+    <Compile Include="ScreenScene.cs" />
+    <Compile Include="SpriteOptions.cs" />
     <Compile Include="Subtitles.cs" />
     <Compile Include="TV.cs" />
   </ItemGroup>

@@ -7,6 +7,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
 using VRage;
 using VRage.Collections;
@@ -72,6 +73,7 @@ namespace IngameScript
             //
             public void Draw()
             {
+                //GridInfo.Echo("Screen: Draw");
                 var frame = _drawingSurface.DrawFrame();
                 DrawSprites(ref frame);
                 frame.Dispose();
@@ -81,10 +83,14 @@ namespace IngameScript
             //
             private void DrawSprites(ref MySpriteDrawFrame frame)
             {
+                //GridInfo.Echo("Screen: DrawSprites: "+_sprites.Count.ToString());
                 // draw all the sprites
                 foreach (ScreenSprite sprite in _sprites)
                 {
-                    if (sprite.Visible) frame.Add(sprite.ToMySprite(_viewport));
+                    //GridInfo.Echo("Screen: DrawSprites: sprite: viewport: "+_viewport.ToString());
+                    //if(sprite != null) GridInfo.Echo("Screen: DrawSprites: sprite: position: "+sprite.GetPosition(_viewport).ToString());
+                    //else GridInfo.Echo("Screen: DrawSprites: sprite: null");
+                    if (sprite != null && sprite.Visible) frame.Add(sprite.ToMySprite(_viewport));
                 }
             }
             // add a text sprite
@@ -115,7 +121,8 @@ namespace IngameScript
         //----------------------------------------------------------------------
         public class ScreenSprite
         {
-            
+            public static float DEFAULT_FONT_SIZE = 1f;
+            public static float MONOSPACE_FONT_SIZE = 0.2f;
             public enum ScreenSpriteAnchor
             {
                 TopLeft,

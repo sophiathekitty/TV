@@ -24,31 +24,77 @@ namespace IngameScript
     {
         public class TV : Screen
         {
+            ScreenScene currentScene;
+            ScreenScene idleScene;
+            bool isIdle = false;
             public TV() : base(GridBlocks.TV)
             {
+                GridInfo.Echo("TV: constructor");
                 // setup tv stuff?
-                SetScene(GridBlocks.GetSurfaceCustomData("TV"));
+                string data = GridBlocks.GetSurfaceCustomData("TV");
+                if(data.Contains("║")) SetScene(data);
             }
             public void SetScene(string data)
             {
+                GridInfo.Echo("TV: SetScene");
+                // remove the current scene
+                if (currentScene != null)
+                {
+                    currentScene.RemoveFromScreen(this);
+                }
                 // load the scene from the data
-                // scene background monospace font image
-                // length of the scene
-                // animated sprite 1
-                // - the start position and end position
-                // - monospace font images for each frame (max like 3)
-                // animated sprite 2
-                // - the start position and end position
-                // - monospace font images for each frame (max like 3)
+                if (data.Contains("type:animation"))
+                {
+                    GridInfo.Echo("TV: SetScene: AnimatedScene");
+                    currentScene = new AnimatedScene(data);
+                    currentScene.AddToScreen(this);
+                }
             }
             public void Play()
             {
-                // apply animations
+                //GridInfo.Echo("TV: Play");
+                if(currentScene != null)
+                {
+
+                    if(isIdle && idleScene != null)
+                    {
+                        //GridInfo.Echo("TV: Play: switch from idleScene");
+                        idleScene.RemoveFromScreen(this);
+                        currentScene.AddToScreen(this);
+                        isIdle = false;
+                    }
+                    //GridInfo.Echo("TV: Play: update currentScene");
+                    currentScene.Update();
+                }
+                //GridInfo.Echo("TV: Play: draw");
                 Draw();
             }
             public void Idle()
             {
+                //GridInfo.Echo("TV: Idle");
                 // show idle display
+                if(!isIdle)
+                {
+                    //GridInfo.Echo("TV: Idle: switch to idleScene");
+                    if(currentScene != null)
+                    {
+                        //GridInfo.Echo("TV: Idle: remove current scene");
+                        currentScene.RemoveFromScreen(this);
+                    }
+                    if(idleScene != null)
+                    {
+                        //GridInfo.Echo("TV: Idle: add idle scene");
+                        idleScene.AddToScreen(this);
+                    }
+                    isIdle = true;
+                }
+                else
+                {
+                    //GridInfo.Echo("TV: Idle: update idleScene");
+                    // update idle display
+                    idleScene.Update();
+                }
+                //GridInfo.Echo("TV: Idle: draw");
                 Draw();
             }
         }

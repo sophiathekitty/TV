@@ -30,6 +30,7 @@ namespace IngameScript
             GridInfo.Init("TV",GridTerminalSystem,IGC,Me,Echo);
             if(Storage != "") GridInfo.Load(Storage);
             tv = new TV();
+            Runtime.UpdateFrequency = UpdateFrequency.Update1;
         }
 
         public void Save()
@@ -39,9 +40,16 @@ namespace IngameScript
 
         public void Main(string argument, UpdateType updateSource)
         {
+            //Echo("TV: Main");
             if(GridBlocks.Couch.IsUnderControl)
             {
+                //Echo("TV: Main: Couch is under control");
                 tv.Play();
+            }
+            else
+            {
+                //Echo("TV: Main: Couch is not under control");
+                tv.Idle();
             }
         }
         //=======================================================================

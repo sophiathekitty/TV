@@ -23,22 +23,28 @@ namespace IngameScript
     partial class Program
     {
         //----------------------------------------------------------------------
-        // BackgroundImage - encapsulates a background image
+        // screen scene - encapsulates a scene for a screen
         //----------------------------------------------------------------------
-        public class BackgroundImage : ScreenSprite
+
+        public class ScreenScene
         {
-            public BackgroundImage(string data, Vector2 size, float scale = 1f) : base(ScreenSpriteAnchor.TopLeft,Vector2.Zero,scale,size,Color.White,"Monospace",data,TextAlignment.LEFT,SpriteType.TEXT)
+            public SceneOptions options;
+            public List<ScreenSprite> sprites = new List<ScreenSprite>();
+            public void AddToScreen(Screen screen)
             {
-                
+                foreach (ScreenSprite sprite in sprites)
+                {
+                    screen.AddSprite(sprite);
+                }
             }
-            public BackgroundImage(string element) : base(ScreenSpriteAnchor.TopLeft, Vector2.Zero, MONOSPACE_FONT_SIZE, Vector2.Zero, Color.White, "Monospace", "", TextAlignment.LEFT, SpriteType.TEXT)
-            {
-                string[] data = element.Split('═');
-                SpriteOptions options = new SpriteOptions(data[0]);
-                Data = data[1];
-                Position = options.position;
-                Size = options.size;
+            public void RemoveFromScreen(Screen screen) 
+            { 
+                foreach (ScreenSprite sprite in sprites)
+                {
+                    screen.RemoveSprite(sprite);
+                }
             }
+            public virtual void Update() { }
         }
     }
 }
