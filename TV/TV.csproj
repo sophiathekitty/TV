@@ -43,6 +43,7 @@
     <Compile Include="BackgroundImage.cs" />
     <Compile Include="GridBlocks.cs" />
     <Compile Include="GridInfo.cs" />
+    <Compile Include="IdleScene.cs" />
     <Compile Include="MDK\Bootstrapper.cs" />
     <AdditionalFiles Include="MDK\MDK.options.props">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>

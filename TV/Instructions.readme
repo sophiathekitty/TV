@@ -1,5 +1,9 @@
-﻿R e a d m e
+﻿TV Reciever and Game Console
 -----------
 
-In this file you can include any instructions or other comments you want to have injected onto the 
-top of your final script. You can safely delete this file if you do not want any such comments.
+This script handles displaying different types of scenes. these can be either 
+an animated scene, or an interactive scene. it expects a block with a textsurface
+and "TV" in the name. (ideally "TV" as the custom name to avoid looking for it)
+
+this script will work with tv broadcasters that can transmit scenes to this TV reciever.
+it will also maybe include a couple simple games that can be played on the TV.

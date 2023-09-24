@@ -33,6 +33,7 @@ namespace IngameScript
                 // setup tv stuff?
                 string data = GridBlocks.GetSurfaceCustomData("TV");
                 if(data.Contains("║")) SetScene(data);
+                idleScene = new IdleScene(Size);
             }
             public void SetScene(string data)
             {
@@ -92,7 +93,7 @@ namespace IngameScript
                 {
                     //GridInfo.Echo("TV: Idle: update idleScene");
                     // update idle display
-                    idleScene.Update();
+                    if(idleScene != null) idleScene.Update();
                 }
                 //GridInfo.Echo("TV: Idle: draw");
                 Draw();

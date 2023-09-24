@@ -54,6 +54,10 @@ namespace IngameScript
                 get { return _drawingSurface.ScriptForegroundColor; }
                 set { _drawingSurface.ScriptForegroundColor = value; }
             }
+            public Vector2 Size
+            {
+                get { return _drawingSurface.SurfaceSize; }
+            }
             //
             // constructor
             //
