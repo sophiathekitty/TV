@@ -125,7 +125,7 @@ namespace IngameScript
         //----------------------------------------------------------------------
         public class ScreenSprite
         {
-            public static float DEFAULT_FONT_SIZE = 1f;
+            public static float DEFAULT_FONT_SIZE = 1.5f;
             public static float MONOSPACE_FONT_SIZE = 0.2f;
             public enum ScreenSpriteAnchor
             {

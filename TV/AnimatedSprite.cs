@@ -77,8 +77,13 @@ namespace IngameScript
                 random = options.random;
                 delay = options.delay;
                 Data = "";
-                GridInfo.Echo("AnimatedSprite: delay: " + delay.ToString());
-                GridInfo.Echo("AnimatedSprite: cells: " + cells.Count.ToString());
+                if (options.HasStart)
+                {
+                    startPosition = options.start;
+                    endPosition = options.end;
+                }
+                //GridInfo.Echo("AnimatedSprite: delay: " + delay.ToString());
+                //GridInfo.Echo("AnimatedSprite: cells: " + cells.Count.ToString());
             }
             // override ToMySprite
             public override MySprite ToMySprite(RectangleF _viewport)

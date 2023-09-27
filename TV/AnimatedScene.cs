@@ -7,6 +7,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
+using System.Security.Policy;
 using System.Text;
 using VRage;
 using VRage.Collections;
@@ -31,41 +32,45 @@ namespace IngameScript
             List<AnimatedSprite> animatedSprites = new List<AnimatedSprite>();
             Subtitles subtitles;
             int frame = 0;
+            Action onDone;
             // constructor
-            public AnimatedScene(string data)
+            public AnimatedScene(string data, Action onDone)
             {
-                GridInfo.Echo("AnimatedScene: constructor");
                 string[] elements = data.Split('║');
                 options = new SceneOptions(elements[0]);
-                GridInfo.Echo("AnimatedScene: options.type: " + options.type);
-                for(int i = 1; i < elements.Length; i++)
+                for (int i = 1; i < elements.Length; i++)
                 {
                     if (elements[i].Contains("type:sprite"))
                     {
-                        GridInfo.Echo("AnimatedScene: constructor: sprite");
                         animatedSprites.Add(new AnimatedSprite(elements[i]));
                     }
                     else if (elements[i].Contains("type:background"))
                     {
-                        GridInfo.Echo("AnimatedScene: constructor: background");
                         backgroundImage = new BackgroundImage(elements[i]);
                     }
                     else if (elements[i].Contains("type:subtitles"))
                     {
-                        GridInfo.Echo("AnimatedScene: constructor: subtitles");
                         subtitles = new Subtitles(elements[i]);
                     }
                 }
                 sprites.Add(backgroundImage);
-                foreach(AnimatedSprite sprite in animatedSprites)
+                foreach (AnimatedSprite sprite in animatedSprites)
                 {
                     sprites.Add(sprite);
                 }
                 sprites.Add(subtitles);
+                this.onDone = onDone;
             }
             // update
             public override void Update()
             {
+                frame++;
+                if (frame >= options.length)
+                {
+                    if(options.loop) frame = 0;
+                    else frame = options.length - 1;
+                    if (onDone != null) onDone();
+                }
                 float percent = (float)frame / (float)options.length;
                 GridInfo.SetVar("ScenePercent", percent.ToString());
             }

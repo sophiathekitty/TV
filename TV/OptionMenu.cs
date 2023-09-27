@@ -7,7 +7,6 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
-using System.Security.Policy;
 using System.Text;
 using VRage;
 using VRage.Collections;
@@ -24,29 +23,15 @@ namespace IngameScript
     partial class Program
     {
         //----------------------------------------------------------------------
-        // screen scene - encapsulates a scene for a screen
+        // options menu for the tv
         //----------------------------------------------------------------------
-
-        public class ScreenScene
+        public class OptionMenu : ScreenMenu
         {
-            public SceneOptions options;
-            public List<ScreenSprite> sprites = new List<ScreenSprite>();
-            public void AddToScreen(Screen screen)
+            public OptionMenu(float width, ScreenActionBar actionBar) : base("TV Options", width, actionBar)
             {
-                foreach (ScreenSprite sprite in sprites)
-                {
-                    screen.AddSprite(sprite);
-                }
+                AddVariable("Ambient Screen", "ShowSlideshow", "false");
             }
-            public void RemoveFromScreen(Screen screen) 
-            { 
-                foreach (ScreenSprite sprite in sprites)
-                {
-                    screen.RemoveSprite(sprite);
-                }
-            }
-            public virtual void Update() { }
-            public virtual void Dispose() { }
         }
+        //----------------------------------------------------------------------
     }
 }

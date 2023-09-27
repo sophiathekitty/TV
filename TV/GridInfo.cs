@@ -82,6 +82,7 @@ namespace IngameScript
                 broadcastListener = IGC.RegisterBroadcastListener(ProgramName);
                 Me.CustomName = "Program: " + ProgramName + " @" + IGC.Me.ToString();
             }
+
             //-------------------------------------------//
             // handle broadcast messages                 //
             //-------------------------------------------//

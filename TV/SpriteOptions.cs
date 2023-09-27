@@ -29,6 +29,9 @@ namespace IngameScript
             public float scale = 1f;
             public float x = 0f;
             public float y = 0f;
+            public float start_x = 0f;
+            public float start_y = 0f;
+            bool has_start = false;
             public string type = "sprite";
             public bool loop = false;
             public bool random = false;
@@ -60,6 +63,16 @@ namespace IngameScript
                         else if (var[0] == "y")
                         {
                             y = float.Parse(var[1]);
+                        }
+                        else if (var[0] == "start_x")
+                        {
+                            start_x = float.Parse(var[1]);
+                            has_start = true;
+                        }
+                        else if (var[0] == "start_y")
+                        {
+                            start_y = float.Parse(var[1]);
+                            has_start = true;
                         }
                         else if (var[0] == "type")
                         {
@@ -97,6 +110,28 @@ namespace IngameScript
                 {
                     width = value.X;
                     height = value.Y;
+                }
+            }
+            public bool HasStart
+            {
+                get { return has_start; }
+            }
+            public Vector2 start
+            {
+                get { return new Vector2(start_x, start_y); }
+                set
+                {
+                    start_x = value.X;
+                    start_y = value.Y;
+                }
+            }
+            public Vector2 end
+            {
+                get { return new Vector2(x, y); }
+                set
+                {
+                    x = value.X;
+                    y = value.Y;
                 }
             }
         }

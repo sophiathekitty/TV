@@ -24,6 +24,7 @@ namespace IngameScript
     {
         public class GridBlocks
         {
+            static List<IMyTextPanel> db = new List<IMyTextPanel>();
             static List<IMyShipController> seats = new List<IMyShipController>();
             static Dictionary<string,IMyTerminalBlock> surfaceProviders = new Dictionary<string,IMyTerminalBlock>();
             public static Dictionary<string,List<IMyTextSurface>> surfaces = new Dictionary<string,List<IMyTextSurface>>();
@@ -39,15 +40,37 @@ namespace IngameScript
                         var textProvider = block as IMyTextSurfaceProvider;
                         if (textProvider != null)
                         {
-                            if(!surfaces.ContainsKey(block.CustomName)) surfaces.Add(block.CustomName, new List<IMyTextSurface>());
-                            if(!surfaceProviders.ContainsKey(block.CustomName)) surfaceProviders.Add(block.CustomName,block);
-                            for (int i = 0; i < textProvider.SurfaceCount; i++)
+                            if (block.CustomName.StartsWith("DB:"))
                             {
-                                IMyTextSurface surface = textProvider.GetSurface(i);
-                                surfaces[block.CustomName].Add(surface);
+                                IMyTextPanel panel = textProvider as IMyTextPanel;
+                                if (panel != null)
+                                {
+                                    db.Add(panel);
+                                }
+                            }
+                            else
+                            {
+                                if (!surfaces.ContainsKey(block.CustomName)) surfaces.Add(block.CustomName, new List<IMyTextSurface>());
+                                if (!surfaceProviders.ContainsKey(block.CustomName)) surfaceProviders.Add(block.CustomName, block);
+                                for (int i = 0; i < textProvider.SurfaceCount; i++)
+                                {
+                                    IMyTextSurface surface = textProvider.GetSurface(i);
+                                    surfaces[block.CustomName].Add(surface);
+                                }
                             }
                         }
                     }
+                }
+            }
+            public static List<IMyTextPanel> Database
+            {
+                get
+                {
+                    if(db.Count == 0)
+                    {
+                        GetBlocks();
+                    }
+                    return db;
                 }
             }
             public static IMyTextSurface TV
@@ -106,6 +129,21 @@ namespace IngameScript
                     foreach (var seat in seats)
                     {
                         if (seat.CustomName.ToLower().Contains("couch")) return seat;
+                    }
+                    return null;
+                }
+            }
+            public static IMyShipController Keyboard
+            {
+                get
+                {
+                    if (seats.Count == 0)
+                    {
+                        GetBlocks();
+                    }
+                    foreach (var seat in seats)
+                    {
+                        if (seat.CustomName.ToLower().Contains("tv")) return seat;
                     }
                     return null;
                 }

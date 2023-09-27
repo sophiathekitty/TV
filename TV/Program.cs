@@ -23,34 +23,29 @@ namespace IngameScript
     partial class Program : MyGridProgram
     {
         //=======================================================================
+        // TV - main program
         TV tv;
-
+        // constructor
         public Program()
         {
             GridInfo.Init("TV",GridTerminalSystem,IGC,Me,Echo);
             if(Storage != "") GridInfo.Load(Storage);
+            SceneCollection.Init();
             tv = new TV();
             Runtime.UpdateFrequency = UpdateFrequency.Update1;
         }
-
+        // save data
         public void Save()
         {
             Storage = GridInfo.Save();
         }
-
+        // main loop
         public void Main(string argument, UpdateType updateSource)
         {
-            //Echo("TV: Main");
-            if(GridBlocks.Couch.IsUnderControl)
-            {
-                //Echo("TV: Main: Couch is under control");
-                tv.Play();
-            }
-            else
-            {
-                //Echo("TV: Main: Couch is not under control");
-                tv.Idle();
-            }
+            if (argument != "") tv.HandleInput(argument);
+            else if (GridBlocks.Couch.IsUnderControl) tv.Play();
+            else if (GridBlocks.Keyboard.IsUnderControl) tv.Play();
+            else tv.Idle();
         }
         //=======================================================================
     }
