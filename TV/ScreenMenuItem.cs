@@ -69,7 +69,9 @@ namespace IngameScript
                 get
                 {
                     if (text == null) return 0;
-                    return GridInfo.GetVarAs<int>(variableName);
+                    int result = 0;
+                    int.TryParse(text.Data, out result);
+                    return GridInfo.GetVarAs<int>(variableName,result);
                 }
                 set
                 {

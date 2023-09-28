@@ -28,9 +28,9 @@ namespace IngameScript
         //----------------------------------------------------------------------
         public class AnimatedScene : ScreenScene
         {
-            BackgroundImage backgroundImage;
-            List<AnimatedSprite> animatedSprites = new List<AnimatedSprite>();
-            Subtitles subtitles;
+            public BackgroundImage backgroundImage;
+            public List<AnimatedSprite> animatedSprites = new List<AnimatedSprite>();
+            public Subtitles subtitles;
             int frame = 0;
             Action onDone;
             // constructor

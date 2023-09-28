@@ -181,35 +181,10 @@ namespace IngameScript
                     item.RemoveFromScreen(screen);
                 }
             }
-            /*
             //
-            // add the sprites to the render list and positions the menu items
+            // handle input
             //
-            public void AddSprites(ref List<ScreenSprite> sprites)
-            {
-                Vector2 position = new Vector2(ItemIndent, Height / -2);
-                title.Position = position;
-                sprites.Add(title);
-                position.Y += ItemHeight * headerHeight;
-                int i = 0;
-                foreach (ScreenMenuItem item in menuItems)
-                {
-                    item.Selected = (i++ == selectedIndex);
-                    item.Position = position;
-                    position.Y += ItemHeight;
-                    item.AddSprites(ref sprites);
-                }
-            }
-            // remove the sprites from the render list
-            public void RemoveSprites(ref List<ScreenSprite> sprites)
-            {
-                foreach (ScreenMenuItem item in menuItems)
-                {
-                    item.RemoveSprites(ref sprites);
-                }
-            }
-            */
-            public string HandleInput(string argument)
+            public virtual string HandleInput(string argument)
             {
                 if (argument.ToLower().StartsWith("btn"))
                 {

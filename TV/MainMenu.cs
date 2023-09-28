@@ -26,8 +26,8 @@ namespace IngameScript
         {            
             public MainMenu(ScreenActionBar actionBar) : base("TV Menu", 300, actionBar)
             {
-                AddLabel("Videos");
                 AddLabel("Games");
+                AddLabel("Editor");
                 AddLabel("Options");
             }
         }

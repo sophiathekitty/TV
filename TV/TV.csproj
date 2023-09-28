@@ -38,6 +38,9 @@
   <Import Project="MDK/MDK.options.props" />
   <Import Project="MDK/MDK.paths.props" Condition="exists('MDK/MDK.paths.props')" />
   <ItemGroup>
+    <Compile Include="AnimatedSceneEditor.cs" />
+    <Compile Include="AnimatedSceneEditorMenu.cs" />
+    <Compile Include="AnimatedSpriteEditMenu.cs" />
     <Compile Include="MainMenu.cs" />
     <Compile Include="OptionMenu.cs" />
     <Compile Include="SceneCollection.cs" />

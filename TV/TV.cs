@@ -28,6 +28,7 @@ namespace IngameScript
         public class TV : Screen
         {
             ScreenScene currentScene;
+            AnimatedSceneEditor editor;
             ScreenScene idleScene;
             ScreenActionBar actionBar;
             TVMenus menus;
@@ -88,9 +89,6 @@ namespace IngameScript
             //
             public void SetScene(string data)
             {
-                // if the current show is exists and is done just return
-                //if (currentShow != null && currentShow.IsDone) return;
-                //GridInfo.Echo("TV:SetScene");
                 // remove the current scene
                 if (currentScene != null)
                 {
@@ -99,10 +97,37 @@ namespace IngameScript
                 // load the scene from the data
                 if (data.Contains("type:animation"))
                 {
-                    //GridInfo.Echo("TV:SetScene:animation");
                     currentScene = new AnimatedScene(data,OnAnimatedSceneDone);
                     currentScene.AddToScreen(this);
                 }
+                // if menu is visible we need to move it to the top of the render queue
+                if (menuVisible) {                     
+                    actionBar.RemoveFromScreen(this);
+                    menus.Hide();
+                    actionBar.AddToScreen(this);
+                    menus.Show();
+                }
+            }
+            //
+            // load the sccene editor
+            //
+            public void LoadEditor()
+            {
+                GridInfo.SetVar("EditingSprite", "-1");
+                if (currentScene != null)
+                {
+                    currentScene.RemoveFromScreen(this);
+                }
+                string data = GridBlocks.GetSurfaceCustomData("TV");
+                if (data.Contains("type:animation"))
+                {
+                    currentScene = editor = new AnimatedSceneEditor(data);
+                    currentScene.AddToScreen(this);
+                }
+                actionBar.RemoveFromScreen(this);
+                menus.Hide();
+                actionBar.AddToScreen(this);
+                menus.Show();
             }
             //
             // play the current scene
@@ -153,6 +178,9 @@ namespace IngameScript
                     if(currentScene != null) currentScene.RemoveFromScreen(this);
                     if(idleScene != null) idleScene.AddToScreen(this);
                     isIdle = true;
+                    menus.SetMenu("main");
+                    menus.Hide();
+                    actionBar.RemoveFromScreen(this);
                 }
                 else
                 {
@@ -182,9 +210,9 @@ namespace IngameScript
                 if (barVisible)
                 {
                     string action = "";
-                    if(menuVisible) action = menus.HandleInput(input);
+                    if (menuVisible) action = menus.HandleInput(input);
                     else action = actionBar.HandleInput(input);
-                    if(action == "back")
+                    if (action == "back")
                     {
                         actionBar.RemoveFromScreen(this);
                         menus.Hide();
@@ -192,6 +220,32 @@ namespace IngameScript
                         menuVisible = false;
                         barTimeout = 0;
                         return "";
+                    }
+                    else if (action == "editor")
+                    {
+                        LoadEditor();
+                        AnimatedScene scene = (AnimatedScene)currentScene;
+                        if (scene != null) menus.SetMenu("editor", scene.animatedSprites.Count);
+                    }
+                    else if(action == "close sprite")
+                    {
+                        AnimatedScene scene = (AnimatedScene)currentScene;
+                        if (scene != null) menus.SetMenu("editor", scene.animatedSprites.Count);
+                    }
+                    else if(action == "close")
+                    {
+                        OnAnimatedSceneDone();
+                    }
+                    else if(action == "save scene")
+                    {
+                        if(editor != null)
+                        {
+                            editor.Save();
+                        }
+                        menus.SetMenu("main");
+                        currentShow.Dispose();
+                        currentShow = new ShowHandler(SceneCollection.shows[0], ShowDone);
+                        SetScene(SceneCollection.GetScene(currentShow.Current));
                     }
                     return action;
                 }

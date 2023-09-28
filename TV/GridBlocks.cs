@@ -118,6 +118,28 @@ namespace IngameScript
                 GridInfo.Echo("GetSurfaceCustomData: " + key + " not found");
                 return "";
             }
+            // set surface custom data
+            public static void SetSurfaceCustomData(string key, string data)
+            {
+                if (surfaceProviders.Count == 0)
+                {
+                    GetBlocks();
+                }
+                if (surfaceProviders.ContainsKey(key))
+                {
+                    surfaceProviders[key].CustomData = data;
+                }
+                else
+                {
+                    foreach (var block in surfaceProviders)
+                    {
+                        if (block.Key.Contains(key))
+                        {
+                            block.Value.CustomData = data;
+                        }
+                    }
+                }
+            }
             public static IMyShipController Couch
             {
                 get

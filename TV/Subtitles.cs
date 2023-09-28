@@ -25,7 +25,7 @@ namespace IngameScript
     {
         public class Subtitles : ScreenSprite
         {
-            List<string> subtitles;
+            public List<string> subtitles;
             bool loop = false;
             bool random = false;
             int delay = 10;

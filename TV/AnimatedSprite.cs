@@ -24,13 +24,29 @@ namespace IngameScript
     {
         public class AnimatedSprite : ScreenSprite
         {
-            List<string> cells = new List<string>();
-            Vector2 startPosition = Vector2.Zero;
-            Vector2 endPosition = Vector2.Zero;
+            public List<string> cells = new List<string>();
+            public Vector2 startPosition = Vector2.Zero;
+            public Vector2 endPosition = Vector2.Zero;
+            public bool HasStart { 
+                get { return startPosition != Vector2.Zero && endPosition != Vector2.Zero; }
+                set 
+                { 
+                    if (!value) startPosition = Vector2.Zero;
+                    else if (startPosition == Vector2.Zero) startPosition = new Vector2(Position.X,Position.Y);
+                }
+            }
             bool loop = false;
             bool random = false;
+            public bool Random 
+            { 
+                get { return random; } 
+                set {
+                    if (value) loop = true;
+                    random = value;
+                }
+            }
             int currentCell = 0;
-            int delay = 10;
+            public int delay = 10;
             int currentDelay = 0;
             // animation done event action
             public Action OnAnimationDone = null;
@@ -81,6 +97,10 @@ namespace IngameScript
                 {
                     startPosition = options.start;
                     endPosition = options.end;
+                }
+                else
+                {
+                    endPosition = options.position;
                 }
                 //GridInfo.Echo("AnimatedSprite: delay: " + delay.ToString());
                 //GridInfo.Echo("AnimatedSprite: cells: " + cells.Count.ToString());
