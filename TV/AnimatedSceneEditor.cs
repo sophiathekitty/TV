@@ -46,7 +46,7 @@ namespace IngameScript
                 data += "║type:background,width:178,height:107═" + backgroundImage.Data;
                 foreach (AnimatedSprite sprite in animatedSprites)
                 {
-                    data += "║type:sprite,width:" + sprite.Size.X + ",height:"+sprite.Size.Y+",animation:random,delay"+sprite.delay;
+                    data += "║type:sprite,width:" + sprite.Size.X + ",height:"+sprite.Size.Y+",animation:random,delay:"+sprite.delay;
                     if(sprite.HasStart)
                     {
                         data += ",x:" + sprite.endPosition.X + ",y:" + sprite.endPosition.Y;

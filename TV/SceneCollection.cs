@@ -29,6 +29,7 @@ namespace IngameScript
         {
             static Dictionary<string, Dictionary<string,List<IMyTextPanel>>> scenes = new Dictionary<string, Dictionary<string, List<IMyTextPanel>>>();
             static List<IMyTextPanel> unused = new List<IMyTextPanel>();
+            public static List<string> StockDialog = new List<string>();
             public static List<string> shows
             {
                 get
@@ -37,7 +38,6 @@ namespace IngameScript
                     foreach (string show in scenes.Keys)
                     {
                         if (GetScene(show, "Main", 0, true).Contains("type:show")) list.Add(show);
-                        list.Add(show);
                     }
                     return list;
                 }
@@ -81,17 +81,33 @@ namespace IngameScript
                     {
                         if (index >= 0 && index < scenes[show][scene].Count)
                         {
-                            if(custom_data) return scenes[show][scene][index].CustomData;
-                            else return scenes[show][scene][index].GetText();
+                            string dialog = GetStockDialog(scene);
+                            if(custom_data) return scenes[show][scene][index].CustomData+dialog;
+                            else return scenes[show][scene][index].GetText()+dialog;
                         }
                     }
+                }
+                return "";
+            }
+            static string GetStockDialog(string scene)
+            {
+                if (scene == "Stock" && StockDialog.Count >= 4)
+                {
+                    string dialog = "║type:subtitles,delay:200,animation:loop═";
+                    // grab the first 4 stock dialog lines
+                    dialog += StockDialog[0] + ":" + StockDialog[1] + ":" + StockDialog[2] + ":" + StockDialog[3];
+                    // now remove them from the list
+                    StockDialog.RemoveRange(0, 4);
+                    return dialog;
+
                 }
                 return "";
             }
             // get the scene from an address (show.scene.index.CustomeData or show.scene.index.Text)
             public static string GetScene(string address)
             {
-               return GetScene(new SceneAddress(address));
+                GridInfo.Echo("SceneCollection: GetScene(" + address + ")");
+                return GetScene(new SceneAddress(address));
             }
             // get the scene using a scene address
             public static string GetScene(SceneAddress sceneAddress)

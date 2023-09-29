@@ -85,6 +85,7 @@ namespace IngameScript
             {
                 public List<string> playlist = new List<string>();
                 public Dictionary<string, List<string>> segments = new Dictionary<string, List<string>>();
+                public List<List<string>> stockDialog = new List<List<string>>();
                 public void ParsePlaylist(string data)
                 {
                     playlist.Clear();
@@ -101,15 +102,44 @@ namespace IngameScript
                     {
                         string[] segmentInfo = dataParts[0].Split(',');
                         string segmentName = "";
+                        bool isStock = false;
+                        int stockCount = 0;
                         foreach (string s in segmentInfo)
                         {
                             string[] kv = s.Split(':');
                             if (kv[0] == "name") segmentName = kv[1];
+                            else if (kv[0] == "stock")
+                            {
+                                int.TryParse(kv[1], out stockCount);
+                                isStock = true;
+                            }
                         }
                         if (segmentName != "")
                         {
                             if (!segments.ContainsKey(segmentName)) segments.Add(segmentName, new List<string>());
-                            segments[segmentName].Add(dataParts[1]);
+                            // if not stock, add the segment
+                            if (!isStock) segments[segmentName].Add(dataParts[1]);
+                            else
+                            {
+                                // if stock, add the segment multiple times
+                                List<string> dialog = dataParts[1].Split(':').ToList<string>();
+                                stockDialog.Add(dialog);
+                                string segment = "";
+                                bool first = true;
+                                for (int i = 0; i < stockCount; i++)
+                                {
+                                    if(first) first = false;
+                                    else segment += ":";
+                                    segment += "Stock";
+                                }
+                                segments[segmentName].Add(segment);
+                            }
+                        }
+                        // if there's stock dialog set that to the SceneCollection
+                        if (stockDialog.Count > 0)
+                        {
+                            // set to a random list of stock dialog
+                            SceneCollection.StockDialog = stockDialog[new Random().Next(stockDialog.Count)];
                         }
                     }
                     // build a playlist from the segments

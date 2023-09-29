@@ -35,7 +35,7 @@ namespace IngameScript
             public string type = "sprite";
             public bool loop = false;
             public bool random = false;
-            public int delay = 10;
+            public int delay = 100;
             public SpriteOptions(string data)
             {
                 string[] options = data.Split(',');

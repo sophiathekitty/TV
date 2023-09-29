@@ -29,7 +29,7 @@ namespace IngameScript
         {
             List<string> images = new List<string>();
             int index = 0;
-            int delay = 200;
+            int delay = 2200;
             int currentDelay = 0;
             ScreenSprite sprite;
             ScreenSprite timeOverlay;
@@ -43,11 +43,11 @@ namespace IngameScript
 
                 // add images to the list
                 images.Add("LCD_HI_Poster1_Landscape");
-                images.Add("LCD_HI_Poster2_Landscape");
-                images.Add("LCD_HI_Poster3_Landscape");
-                images.Add("LCD_SoF_BrightFuture_Landscape");
-                images.Add("LCD_SoF_CosmicTeam_Landscape");
-                images.Add("LCD_SoF_Exploration_Landscape");
+                //images.Add("LCD_HI_Poster2_Landscape");
+                //images.Add("LCD_HI_Poster3_Landscape");
+                //images.Add("LCD_SoF_BrightFuture_Landscape");
+                //images.Add("LCD_SoF_CosmicTeam_Landscape");
+                //images.Add("LCD_SoF_Exploration_Landscape");
                 images.Add("LCD_SoF_SpaceTravel_Landscape");
                 images.Add("LCD_SoF_ThunderFleet_Landscape");
             }

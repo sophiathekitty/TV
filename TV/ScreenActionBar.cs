@@ -68,7 +68,7 @@ namespace IngameScript
             public void SetupSprites(Color color, float scale = 2f, string font = "White")
             {
                 sprites.Clear();
-                back = new ScreenSprite(ScreenSprite.ScreenSpriteAnchor.BottomLeft, new Vector2(0, -30 * scale), 0f, new Vector2(width, 30 * scale*2), Color.Black, "", "SquareSimple", TextAlignment.LEFT, SpriteType.TEXTURE);
+                back = new ScreenSprite(ScreenSprite.ScreenSpriteAnchor.BottomLeft, new Vector2(0, -30 * scale), 0f, new Vector2(width, 30 * scale*2), new Color(Color.Black,0.1f), "", "SquareSimple", TextAlignment.LEFT, SpriteType.TEXTURE);
                 float awidth = width / actions.Length;
                 Vector2 position = new Vector2(awidth/2, (-30 * scale)-10);
                 Vector2 actionWidth = new Vector2(awidth,0);

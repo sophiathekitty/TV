@@ -7,6 +7,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
+using System.Security.Cryptography;
 using System.Text;
 using VRage;
 using VRage.Collections;
@@ -45,7 +46,9 @@ namespace IngameScript
             public TV() : base(GridBlocks.TV)
             {
                 // setup show
-                foreach (string show in SceneCollection.shows)
+                List<string> availableShows = SceneCollection.shows.ToList();
+
+                foreach (string show in availableShows)
                 {
                     GridInfo.Echo("TV:Show: " + show);
                 }
@@ -54,8 +57,9 @@ namespace IngameScript
                 if(SceneCollection.shows.Count > 0)
                 {
                     // start the first show
-                    GridInfo.Echo("TV:Starting:Show: " + SceneCollection.shows[0]);
-                    currentShow = new ShowHandler(SceneCollection.shows[0], ShowDone);
+                    int index = new Random().Next(availableShows.Count);
+                    GridInfo.Echo("TV:Starting:Show: " + availableShows[index]);
+                    currentShow = new ShowHandler(availableShows[index], ShowDone);
                     GridInfo.Echo("TV:Starting:Scene: " + currentShow.Current);
                     SetScene(SceneCollection.GetScene(currentShow.Current));
                 } 
@@ -100,6 +104,7 @@ namespace IngameScript
                     currentScene = new AnimatedScene(data,OnAnimatedSceneDone);
                     currentScene.AddToScreen(this);
                 }
+                else GridInfo.Echo("TV:Scene:Error: data.Length=" + data.Length);
                 // if menu is visible we need to move it to the top of the render queue
                 if (menuVisible) {                     
                     actionBar.RemoveFromScreen(this);
@@ -157,7 +162,10 @@ namespace IngameScript
                         // restart the show
                         GridInfo.Echo("TV:Show:Done: " + currentShow.Name);
                         currentShow.Dispose();
-                        currentShow = new ShowHandler(SceneCollection.shows[0], ShowDone);
+                        // select a random show
+                        List<string> availableShows = SceneCollection.shows.ToList();
+                        int index = new Random().Next(availableShows.Count);
+                        currentShow = new ShowHandler(availableShows[index], ShowDone);
                         SetScene(SceneCollection.GetScene(currentShow.Current));
                     }
                     else
