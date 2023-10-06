@@ -110,7 +110,7 @@ namespace IngameScript
             {
                 string[] cmd = input.Split(' ');
                 int index = -1;
-                for(int i = 0; i < actions.Length; i++)
+                for(int i = 0; i < cmd.Length; i++)
                 {
                     if (int.TryParse(cmd[i], out index))
                     {

@@ -38,9 +38,11 @@
   <Import Project="MDK/MDK.options.props" />
   <Import Project="MDK/MDK.paths.props" Condition="exists('MDK/MDK.paths.props')" />
   <ItemGroup>
+    <Compile Include="AnimatedCharacter.cs" />
     <Compile Include="AnimatedSceneEditor.cs" />
     <Compile Include="AnimatedSceneEditorMenu.cs" />
     <Compile Include="AnimatedSpriteEditMenu.cs" />
+    <Compile Include="GameRPG.cs" />
     <Compile Include="MainMenu.cs" />
     <Compile Include="OptionMenu.cs" />
     <Compile Include="SceneCollection.cs" />
@@ -70,8 +72,14 @@
     <Compile Include="ShowHandler.cs" />
     <Compile Include="SpriteOptions.cs" />
     <Compile Include="Subtitles.cs" />
+    <Compile Include="Tilemap.cs" />
     <Compile Include="TV.cs" />
     <Compile Include="TVMenus.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\.editorconfig">
+      <Link>.editorconfig</Link>
+    </None>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Target Name="AfterBuild">

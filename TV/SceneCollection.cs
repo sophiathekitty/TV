@@ -57,7 +57,7 @@ namespace IngameScript
             // constructor
             public static void Init()
             {
-                GridInfo.Echo("SceneCollection: constructor");
+                //GridInfo.Echo("SceneCollection: constructor");
                 // sort the database by the custom name
                 GridBlocks.Database.Sort((a, b) => a.CustomName.CompareTo(b.CustomName));
                 foreach (IMyTextPanel panel in GridBlocks.Database)
@@ -106,7 +106,7 @@ namespace IngameScript
             // get the scene from an address (show.scene.index.CustomeData or show.scene.index.Text)
             public static string GetScene(string address)
             {
-                GridInfo.Echo("SceneCollection: GetScene(" + address + ")");
+                //GridInfo.Echo("SceneCollection: GetScene(" + address + ")");
                 return GetScene(new SceneAddress(address));
             }
             // get the scene using a scene address

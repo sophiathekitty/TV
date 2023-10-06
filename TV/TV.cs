@@ -9,6 +9,7 @@ using System.Collections.Immutable;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
+using System.Text.RegularExpressions;
 using VRage;
 using VRage.Collections;
 using VRage.Game;
@@ -51,17 +52,21 @@ namespace IngameScript
                 foreach (string show in availableShows)
                 {
                     GridInfo.Echo("TV:Show: " + show);
+                    shows.Add(show);
                 }
                 // clone the list of shows so we can remove them as we go
-                shows = SceneCollection.shows.ToList();
+                //shows = SceneCollection.shows.ToList();
                 if(SceneCollection.shows.Count > 0)
                 {
+                    /*
                     // start the first show
                     int index = new Random().Next(availableShows.Count);
                     GridInfo.Echo("TV:Starting:Show: " + availableShows[index]);
                     currentShow = new ShowHandler(availableShows[index], ShowDone);
                     GridInfo.Echo("TV:Starting:Scene: " + currentShow.Current);
                     SetScene(SceneCollection.GetScene(currentShow.Current));
+                    */
+                    PlayRandomShow();
                 } 
                 else
                 {
@@ -78,7 +83,7 @@ namespace IngameScript
             // hand show done event
             void ShowDone(string show)
             {
-                GridInfo.Echo("TV:ShowDone: " + show);
+                GridInfo.Echo("TV:ShowDone(" + show+")");
                 if (currentShow != null)
                 {
                     currentShow.Dispose();
@@ -87,6 +92,32 @@ namespace IngameScript
                 SetScene(SceneCollection.GetScene(currentShow.Current));
                 GridInfo.Echo("TV:ShowDone:Scene: " + currentShow.Current);
 
+            }
+            void PlayRandomShow()
+            {
+                GridInfo.Echo("TV:PlayRandomShow shows: "+shows.Count);
+                // select a random show from the shows list
+                if (shows.Count > 0)
+                {
+                    int index = new Random().Next(shows.Count);
+                    currentShow = new ShowHandler(shows[index], ShowDone);
+                    SetScene(SceneCollection.GetScene(currentShow.Current));
+                    shows.RemoveAt(index);
+                    GridInfo.Echo("TV:PlayRandomShow: " + index + " / " + shows.Count);
+                }
+                else
+                {
+                    // no more shows to play
+                    // restart the show list
+                    List<string> availableShows = SceneCollection.shows.ToList();
+                    shows.Clear();
+                    foreach (string show in availableShows)
+                    {
+                        GridInfo.Echo("TV:Show: " + show);
+                        if(show != currentShow.Name) shows.Add(show);
+                    }
+                    if(shows.Count > 0) PlayRandomShow();
+                }
             }
             //
             // set the scene to the given data
@@ -159,6 +190,7 @@ namespace IngameScript
                 {
                     if(currentShow.IsDone)
                     {
+                        /*
                         // restart the show
                         GridInfo.Echo("TV:Show:Done: " + currentShow.Name);
                         currentShow.Dispose();
@@ -167,11 +199,14 @@ namespace IngameScript
                         int index = new Random().Next(availableShows.Count);
                         currentShow = new ShowHandler(availableShows[index], ShowDone);
                         SetScene(SceneCollection.GetScene(currentShow.Current));
+                        */
+                        GridInfo.Echo("TV:Show:Done: " + currentShow.Name);
+                        PlayRandomShow();
                     }
                     else
                     {
                         SetScene(SceneCollection.GetScene(currentShow.Next()));
-                        GridInfo.Echo("TV:Next:Scene: " + currentShow.Current);
+                        //GridInfo.Echo("TV:Next:Scene: " + currentShow.Current);
 
                     }
                 }
@@ -263,6 +298,7 @@ namespace IngameScript
                 menuVisible = true;
                 return "";
             }
+            
         }
         //----------------------------------------------------------------------
     }
