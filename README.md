@@ -1,4 +1,4 @@
-# TV
+# TV (Animated LCD System for Space Engineers)
 
 this is a script for space engineers that will display an idle slideshow with an ingame clock on a block named "TV" (developed using the new Inset Entertainment Corner block). but i'm using the text panel image size for the scene background image. so in theory should work on a text panel too.
 
