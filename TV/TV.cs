@@ -29,6 +29,7 @@ namespace IngameScript
         //----------------------------------------------------------------------
         public class TV : Screen
         {
+            GameRPG game;
             ScreenScene currentScene;
             AnimatedSceneEditor editor;
             ScreenScene idleScene;
@@ -250,10 +251,12 @@ namespace IngameScript
             public string HandleInput(string input)
             {
                 if(input == "") return "";
+
                 if (barVisible)
                 {
                     string action = "";
-                    if (menuVisible) action = menus.HandleInput(input);
+                    if (game != null) action = game.HandleInput(input);
+                    else if (menuVisible) action = menus.HandleInput(input);
                     else action = actionBar.HandleInput(input);
                     if (action == "back")
                     {
@@ -289,6 +292,27 @@ namespace IngameScript
                         currentShow.Dispose();
                         currentShow = new ShowHandler(SceneCollection.shows[0], ShowDone);
                         SetScene(SceneCollection.GetScene(currentShow.Current));
+                        return "";
+                    }
+                    else if(action == "games")
+                    {
+                        GridInfo.Echo("TV:Games");
+                        if(currentScene != null) currentScene.RemoveFromScreen(this);
+                        GridInfo.Echo("TV:Games:SceneRemoved");
+                        if (currentShow != null) currentShow.Dispose();
+                        GridInfo.Echo("TV:Games:ShowDisposed");
+                        currentShow = null;
+                        menus.Hide();
+                        // for now we're going to load the first game in the games list to see if it works
+                        if (SceneCollection.games.Count > 0) GridInfo.Echo("TV:Games:Scene: " + SceneCollection.games[0]);
+                        if (SceneCollection.games.Count > 0) game = new GameRPG(SceneCollection.games[0], actionBar);
+                        GridInfo.Echo("TV:Games:GameCreated");
+                        game.LoadMap("throne");
+                        GridInfo.Echo("TV:Games:MapLoaded");
+                        game.AddToScreen(this);
+                        GridInfo.Echo("TV:Games:GameAddedToScreen");
+                        game.Update();
+                        return "";
                     }
                     return action;
                 }

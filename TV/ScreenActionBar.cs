@@ -117,6 +117,7 @@ namespace IngameScript
                         break;
                     }
                 }
+                index--;
                 if (index >= 0 && index < actions.Length)
                 {
                     GridInfo.Echo(actions[index]);

@@ -27,12 +27,13 @@ namespace IngameScript
         //-----------------------------------------------------------------------
         public class AnimatedCharacter : ScreenSprite
         {
-            public static Dictionary<string, string> CharacterLibrary;
+            public static Dictionary<string, string> CharacterLibrary = new Dictionary<string, string>();
             public static int CharacterWidth = 16;
             public static int CharacterHeight = 16;
             public static int frameRate = 5;
             public static void LoadCharacters(string data)
             {
+                GridInfo.Echo("Loading characters: "+data.Length);
                 string[] parts = data.Split('║');
                 foreach(string part in parts)
                 {
@@ -43,6 +44,7 @@ namespace IngameScript
                         foreach(string var in info)
                         {
                             string[] pair = var.Split(':');
+                            if (pair.Length != 2) { GridInfo.Echo(var); continue; }
                             if (pair[0] == "width") CharacterWidth = int.Parse(pair[1]);
                             else if (pair[0] == "height") CharacterHeight = int.Parse(pair[1]);
                             else if (pair[0] == "frameRate") frameRate = int.Parse(pair[1]);
@@ -56,6 +58,7 @@ namespace IngameScript
                             if(var.Contains("type:"))
                             {
                                 string[] pair = var.Split(':');
+                                if (pair.Length != 2) { GridInfo.Echo(var); continue; }
                                 string type = pair[1];
                                 CharacterLibrary.Add(type,part);
                                 break;
@@ -67,8 +70,9 @@ namespace IngameScript
             Dictionary<string, string[]> spriteData = new Dictionary<string,string[]>();
             string type = "";
             string direction = "down";
-
-            public AnimatedCharacter(string element) : base(ScreenSpriteAnchor.BottomLeft,Vector2.Zero,0.02f,new Vector2(16,16),Color.White,"Monospace","",TextAlignment.LEFT,SpriteType.TEXT)
+            public int X;
+            public int Y;
+            public AnimatedCharacter(string element) : base(ScreenSpriteAnchor.TopLeft,Vector2.Zero,Tilemap.fontSize,new Vector2(16,16),Color.White,"Monospace","",TextAlignment.LEFT,SpriteType.TEXT)
             {
                 string[] parts = element.Split('═');
                 foreach(string part in parts)
@@ -79,6 +83,7 @@ namespace IngameScript
                     {
                         string id = data[0];
                         string[] sprites = data[1].Split(',');
+                        //GridInfo.Echo("animated character: constructor: "+ type+": " + id + ": " + sprites.Length);
                         spriteData.Add(id,sprites);
                     }
                 }
@@ -87,18 +92,22 @@ namespace IngameScript
             {
                 if(spriteData.ContainsKey(dir)) direction = dir;
                 else direction = spriteData.Keys.First();
+                //Data = spriteData[direction][0];
             }
             int frame = 0;
             int frameCount = 0;
             public override MySprite ToMySprite(RectangleF _viewport)
             {
+                //GridInfo.Echo("npc: ToMySprite: "+frameCount);
                 // get the next sprite frame and loop
                 if(frameCount++ > frameRate)
                 {
                     frame = (frame + 1) % spriteData[direction].Length;
                     frameCount = 0;
                 }
+                //GridInfo.Echo("npc: ToMySprite: " + direction + ": "+frame);
                 Data = spriteData[direction][frame];
+                //GridInfo.Echo("npc: ToMySprite: " + Data);
                 return base.ToMySprite(_viewport);
             }
         }

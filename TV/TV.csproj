@@ -44,6 +44,7 @@
     <Compile Include="AnimatedSpriteEditMenu.cs" />
     <Compile Include="GameRPG.cs" />
     <Compile Include="MainMenu.cs" />
+    <Compile Include="npc.cs" />
     <Compile Include="OptionMenu.cs" />
     <Compile Include="SceneCollection.cs" />
     <Compile Include="ScreenActionBar.cs" />

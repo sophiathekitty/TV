@@ -31,6 +31,7 @@ namespace IngameScript
         //-----------------------------------------------------------------------
         public class Tilemap
         {
+            public static float fontSize = 0.2f;
             List<ScreenSprite> visibleTiles = new List<ScreenSprite>();
             string[] tileMap;
             int mapWidth;
@@ -49,6 +50,17 @@ namespace IngameScript
             int tileHeight = 0;
             static int resolutionWidth = 178;
             static int resolutionHeight = 107;
+            List<npc> npcs = new List<npc>();
+            public Vector2 TileSize
+            {
+                get
+                {
+                    float width = screenWidth / viewPortWidth;
+                    float height = screenHeight / viewPortHeight;
+                    if(width < height) return new Vector2(width, width);
+                    return new Vector2(height, height);    
+                }
+            }
             public Tilemap(float width, float height)
             {
                 screenWidth = width;
@@ -79,6 +91,7 @@ namespace IngameScript
             public bool IsGround(int x, int y)
             {
                 char tile = GetTile(x, y);
+                GridInfo.Echo("IsGround: " + tile +" ??? " + groundTiles);
                 return groundTiles.Contains(tile);
             }
             // is this tile toxic?
@@ -93,25 +106,35 @@ namespace IngameScript
                 char tile = GetTile(x, y);
                 return dangerTiles.Contains(tile);
             }
+            public bool IsOccupied(int x, int y)
+            {
+                foreach(npc npc in npcs)
+                {
+                    if (npc.BlocksMovement && npc.X == x && npc.Y == y) return true;
+                }
+                return false;
+            }
             // load the tile set from a string
             public void LoadTiles(string data)
             {
+                GridInfo.Echo("LoadTiles:");
                 if(tiles == null) tiles = new Dictionary<char,string>();
                 tiles.Clear();
                 string[] parts = data.Split('║');
                 foreach(string part in parts)
                 {
                     // get tile set info
-                    if (part.Contains("type:sprites"))
+                    if (part.Contains("type:tiles"))
                     {
                         // get tileset info
                         string[] vars = part.Split(',');
                         foreach(string var in vars)
                         {
                             string[] pair = var.Split(':');
+                            if (pair.Length > 0) GridInfo.Echo("LoadTiles: " + pair[0]);
                             if (pair.Length == 2)
                             {
-                                if (pair[0] == "ground") groundTiles = pair[1];
+                                if (pair[0] == "ground") { groundTiles = pair[1]; GridInfo.Echo("groundTiles: " + groundTiles + " "+ pair[1] + " "+var); }
                                 else if (pair[0] == "toxic") toxicTiles = pair[1];
                                 else if (pair[0] == "danger") dangerTiles = pair[1];
                                 else if (pair[0] == "width") tileWidth = int.Parse(pair[1]);
@@ -139,47 +162,74 @@ namespace IngameScript
             // load a tile map from a string
             public void LoadMap(string data)
             {
-                // example map:
-                // aaaa
-                // abba
-                // aaaa
-                // need to find the width and height of the map
-                string[] lines = data.Split('\n');
-                mapHeight = lines.Length;
-                if(mapHeight == 0) return;
-                mapWidth = lines[0].Length;
-                tileMap = new string[mapHeight];
-                for(int y = 0; y < mapHeight; y++)
+                GridInfo.Echo("LoadMap:");
+                string[] parts = data.Split('║');
+                foreach(string part in parts)
                 {
-                    tileMap[y] = lines[y];
+                    if (part.StartsWith("type:map"))
+                    {
+                        // get map tiles
+                        string[] map_parts = part.Split('═');
+                        if(map_parts.Length != 2) return;
+                        string[] lines = map_parts[1].Split('\n');
+                        mapHeight = lines.Length;
+                        if (mapHeight == 0) return;
+                        mapWidth = lines[0].Length;
+                        tileMap = new string[mapHeight];
+                        for (int y = 0; y < mapHeight; y++)
+                        {
+                            tileMap[y] = lines[y];
+                        }
+                    }
+                    else if (part.StartsWith("type:npc"))
+                    {
+                        // load an npc
+                        npcs.Add(npc.MakeNPC(part));
+                    }
                 }
             }
             public void SetViewCenter(int x, int y)
             {
+                GridInfo.Echo("SetViewCenter: Center: " + x + "," + y);
                 viewPortX = x - viewPortWidth / 2;
                 viewPortY = y - viewPortHeight / 2;
                 if (viewPortX < 0) viewPortX = 0;
                 if (viewPortY < 0) viewPortY = 0;
                 if (viewPortX + viewPortWidth > mapWidth) viewPortX = mapWidth - viewPortWidth;
                 if (viewPortY + viewPortHeight > mapHeight) viewPortY = mapHeight - viewPortHeight;
+                GridInfo.Echo("SetViewCenter: Position: " + viewPortX + "," + viewPortY);
                 ApplyViewPortTiles();
+            }
+            public Vector2 GridPosToScreenPos(int x, int y)
+            {
+                Vector2 tileSize = TileSize;//new Vector2(screenWidth / viewPortWidth, screenHeight / viewPortHeight);
+                x -= viewPortX;
+                y -= viewPortY;
+                return new Vector2(x * tileSize.X, y * tileSize.Y);
             }
             public void ApplyViewPortTiles()
             {
                // go through the viewports tiles and apply them to the visible tiles
-                Vector2 tileSize = new Vector2(screenWidth / viewPortWidth, screenHeight / viewPortHeight);
+                //Vector2 tileSize = new Vector2(screenWidth / viewPortWidth, screenHeight / viewPortHeight);
                 Vector2 tilePos = new Vector2(0, 0);
                 int i = 0;
+                if(visibleTiles.Count == 0) return;
+                //GridInfo.Echo("ApplyViewPortTiles: " + viewPortX + "," + viewPortY + " | "+i+" / "+visibleTiles.Count);
                 for(int y = 0; y < viewPortHeight; y++)
                 {
                     for(int x = 0; x < viewPortWidth; x++)
                     {
+                        //GridInfo.Echo("ApplyViewPortTiles: " + (x + viewPortX) + "," + (y + viewPortY));
                         char tile = GetTile(x + viewPortX, y + viewPortY);
-                        if (tiles.ContainsKey(tile)) visibleTiles[i].Data = tiles[tile];
-                        else visibleTiles[i].Data = "";
+                        //GridInfo.Echo("ApplyViewPortTiles: ("+i+")" + tile);
+                        if (tiles.ContainsKey(tile) && visibleTiles.Count > i) visibleTiles[i].Data = tiles[tile];
+                        else if(visibleTiles.Count > i) visibleTiles[i].Data = "";
                         i++;
                     }
                 }
+                //GridInfo.Echo("ApplyViewPortTiles: " + i);
+                MoveNPCs();
+                //GridInfo.Echo("ApplyViewPortTiles: npcs moved...");
             }
             public void AddToScreen(Screen screen)
             {
@@ -192,7 +242,7 @@ namespace IngameScript
                 visibleTiles.Clear();
                 // setup the screen sprites
                 // we need to space them out evenly on the screen
-                Vector2 tileSize = new Vector2(screenWidth / viewPortWidth, screenHeight / viewPortHeight);
+                Vector2 tileSize = TileSize;//new Vector2(screenWidth / viewPortWidth, screenHeight / viewPortHeight);
                 Vector2 tilePos = new Vector2(0, 0);
                 for(int y = 0; y < viewPortHeight; y++)
                 {
@@ -201,7 +251,7 @@ namespace IngameScript
                         char tile = GetTile(x, y);
                         if (tiles.ContainsKey(tile))
                         {
-                            ScreenSprite sprite = new ScreenSprite(ScreenSprite.ScreenSpriteAnchor.TopLeft, tilePos, 0.02f, tileSize, Color.White, "Monospace", tiles[tile],TextAlignment.LEFT,SpriteType.TEXT);
+                            ScreenSprite sprite = new ScreenSprite(ScreenSprite.ScreenSpriteAnchor.TopLeft, tilePos, fontSize, tileSize, Color.White, "Monospace", tiles[tile],TextAlignment.LEFT,SpriteType.TEXT);
                             visibleTiles.Add(sprite);
                             screen.AddSprite(sprite);
                         }
@@ -209,6 +259,55 @@ namespace IngameScript
                     }
                     tilePos.X = 0;
                     tilePos.Y += tileSize.Y;
+                }
+                GridInfo.Echo("AddToScreen: " + visibleTiles.Count);
+                // add npcs to screen
+                foreach(npc npc in npcs)
+                {
+                    // calculate the position of the npc on the screen based on it's grid position and the viewport offset
+                    int x = npc.X - viewPortX;
+                    int y = npc.Y - viewPortY;
+                    GridInfo.Echo("npc: " + npc.X + "," + npc.Y + " screen: " + x + "," + y);
+                    npc.Position = new Vector2(x * tileSize.X, y * tileSize.Y);
+                    GridInfo.Echo("npc: " + npc.Position.ToString());
+                    npc.SetDirection("down");
+                    screen.AddSprite(npc);
+                    //npc.RotationOrScale = 0.5f;
+                    GridInfo.Echo("npc: added "+npc.RotationOrScale);
+                }
+            }
+            public void MoveNPCs()
+            {
+                //GridInfo.Echo("MoveNPCs:");
+                // have every random walk npc attempt to move
+                Vector2 tileSize = TileSize; //new Vector2(screenWidth / viewPortWidth, screenHeight / viewPortHeight);
+                string[] dirs = { "up", "down", "left", "right" };
+                foreach (npc npc in npcs)
+                {
+                    if (npc.DoWalk)
+                    {
+                        // pick a random direction
+                        int dir = new Random().Next(0, 4);
+                        // attempt to move in that direction
+                        int newX = npc.X;
+                        int newY = npc.Y;
+                        if (dirs[dir] == "up") newY--;
+                        else if (dirs[dir] == "down") newY++;
+                        else if (dirs[dir] == "left") newX--;
+                        else if (dirs[dir] == "right") newX++;
+                        // check if the new position is valid
+                        if (IsGround(newX, newY) && !IsOccupied(newX, newY))
+                        {
+                            // move the npc
+                            npc.X = newX;
+                            npc.Y = newY;
+                        }
+                        npc.SetDirection(dirs[dir]);
+                    }
+                    // calculate the position of the npc on the screen based on it's grid position and the viewport offset
+                    int x = npc.X - viewPortX;
+                    int y = npc.Y - viewPortY;
+                    npc.Position = new Vector2(x * tileSize.X, y * tileSize.Y);
                 }
             }
             public void RemoveFromScreen(Screen screen)
@@ -218,7 +317,11 @@ namespace IngameScript
                 {
                     screen.RemoveSprite(sprite);
                 }
-                //visibleTiles.Clear();
+                // remove npcs from screen
+                foreach(npc npc in npcs)
+                {
+                    screen.RemoveSprite(npc);
+                }
             }
         }
     }
