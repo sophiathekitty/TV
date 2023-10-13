@@ -27,6 +27,7 @@ namespace IngameScript
         //----------------------------------------------------------------------
         public class ScreenMenu
         {
+            ScreenSprite back;
             ScreenSprite title;
             List<ScreenMenuItem> menuItems = new List<ScreenMenuItem>();
             int selectedIndex = 0;
@@ -100,6 +101,7 @@ namespace IngameScript
                 }
                 set
                 {
+                    back.Visible = value;
                     title.Visible = value;
                     foreach (ScreenMenuItem item in menuItems)
                     {
@@ -120,6 +122,17 @@ namespace IngameScript
                 _width = width;
                 this.title = new ScreenSprite(ScreenSprite.ScreenSpriteAnchor.CenterLeft, Vector2.Zero, headerHeight, Vector2.Zero, Color.White, "White", title, TextAlignment.LEFT, SpriteType.TEXT);
                 this.actionBar = actionBar;
+            }
+            public void SetBackgroundColor(Color color)
+            {
+                if(back == null)
+                {
+                    back = new ScreenSprite(ScreenSprite.ScreenSpriteAnchor.CenterLeft, Vector2.Zero, 0, Vector2.Zero, color, "", "SquareSimple", TextAlignment.LEFT, SpriteType.TEXTURE);
+                }
+                else
+                {
+                    back.Color = color;
+                }
             }
             //
             // add a label to the menu
@@ -158,6 +171,12 @@ namespace IngameScript
             public void AddToScreen(Screen screen)
             {
                 Vector2 position = new Vector2(ItemIndent, Height / -2);
+                if(back != null)
+                {
+                    back.Position = new Vector2(-5,10);
+                    back.Size = new Vector2(Width+10, Height+30);
+                    screen.AddSprite(back);
+                }
                 title.Position = position;
                 position.Y += ItemHeight * headerHeight;
                 int i = 0;
@@ -175,6 +194,7 @@ namespace IngameScript
             //
             public void RemoveFromScreen(Screen screen)
             {
+                screen.RemoveSprite(back);
                 screen.RemoveSprite(title);
                 foreach (ScreenMenuItem item in menuItems)
                 {

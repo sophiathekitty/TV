@@ -22,6 +22,14 @@ namespace IngameScript
 {
     partial class Program
     {
+        //----------------------------------------------------------------------------------------------------
+        // npc
+        // animated and/or interactable props that can be characters or chests and locked doors
+        // can block movement or not (for example, a chest would not block movement. but a door would)
+        // can be animated or not.
+        // uses a simple action scripting system to control behavior (simple math and conditional flow.
+        // with some aditional special functions. like give to give an item. or shop to show the shop.)
+        //----------------------------------------------------------------------------------------------------
         public class npc : AnimatedCharacter
         {
             public static npc MakeNPC(string element)
@@ -41,11 +49,21 @@ namespace IngameScript
                 }
                 return null;
             }
-
+            public List<GameAction> actions = new List<GameAction>();
             bool randomWalk = false;
             public bool BlocksMovement = true;
             int walkTimer = 0;
-            static int walkTime = 10;
+            static int walkTime = 3;
+            bool visible = true;
+            public bool NPCVisible
+            {
+                get { return visible; }
+                set
+                {
+                    visible = value;
+                    Visible = value;
+                }
+            }
             public bool DoWalk
             {
                 get
@@ -60,6 +78,7 @@ namespace IngameScript
                     return false;
                 }
             }
+            // constructor
             public npc(string character, string[] parts) : base(AnimatedCharacter.CharacterLibrary[character])
             {
                 GridInfo.Echo("npc: constructor: " + character);
@@ -74,11 +93,36 @@ namespace IngameScript
                             if (pair[0] == "x") X = int.Parse(pair[1]);
                             else if (pair[0] == "y") Y = int.Parse(pair[1]);
                             else if (pair[0] == "walk") randomWalk = bool.Parse(pair[1]);
+                            else if (pair[0] == "direction") SetDirection(pair[1]);
                         }
+                    }
+                    else if (part.Contains("action:"))
+                    {
+                        GridInfo.Echo("npc: constructor: action:");
+                        actions.Add(new GameAction(part,this));
+                    }
+                    // else it's setting a properety
+                    else if (part.StartsWith("visible"))
+                    {
+                        GridInfo.Echo("npc: constructor: visible: "+part);
+                        string[] pair = part.Split(':');
+                        if(pair.Length > 2) Visible = GameAction.GetValueAs<bool>(pair[1], this, bool.Parse(pair[2]));
+                        else Visible = GameAction.GetValueAs<bool>(pair[1],this);
+                        NPCVisible = Visible;
+                        GridInfo.Echo("npc: constructor: visible: "+Visible);
                     }
                 }
                 SetDirection("down");
             }
+            public void FacePlayer(AnimatedCharacter player)
+            {
+                if (player == null) return;
+                if (player.Direction == "up") SetDirection("down",false);
+                else if (player.Direction == "down") SetDirection("up",false);
+                else if (player.Direction == "left") SetDirection("right",false);
+                else if (player.Direction == "right") SetDirection("left", false);
+            }
         }
+        //----------------------------------------------------------------------------------------------------
     }
 }

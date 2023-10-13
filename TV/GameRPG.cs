@@ -27,6 +27,7 @@ namespace IngameScript
         //-----------------------------------------------------------------------
         public class GameRPG
         {
+            public static Action<string> Say;
             string title;
             string name;
             Tilemap map;
@@ -34,16 +35,20 @@ namespace IngameScript
             int playerY = 0;
             string currentMap = "";
             AnimatedCharacter player;
-            Dictionary<string,int> playerStats = new Dictionary<string,int>();
-            Dictionary<string,int> playerMaxStats = new Dictionary<string,int>();
-            Dictionary<string,string> playerGear = new Dictionary<string,string>();
-            Dictionary<string,int> playerInventory = new Dictionary<string,int>();
-            Dictionary<string,int> enemyStats = new Dictionary<string,int>();
-            Dictionary<string,Dictionary<string,string>> itemStats = new Dictionary<string,Dictionary<string,string>>();
-            Dictionary<string,bool> gameBools = new Dictionary<string,bool>();
-            Dictionary<string,int> gameInts = new Dictionary<string,int>();
-            Dictionary<string,string> maps = new Dictionary<string,string>();
+            public static Dictionary<string,double> playerStats = new Dictionary<string,double>();
+            public static Dictionary<string,int> playerMaxStats = new Dictionary<string,int>();
+            public static Dictionary<string,string> playerGear = new Dictionary<string,string>();
+            public static Dictionary<string, int> playerInventory = new Dictionary<string, int>();
+            public static Dictionary<string, int> enemyStats = new Dictionary<string, int>();
+            public static Dictionary<string,Dictionary<string,string>> itemStats = new Dictionary<string,Dictionary<string,string>>();
+            public static Dictionary<string, bool> gameBools = new Dictionary<string, bool>();
+            public static Dictionary<string, int> gameInts = new Dictionary<string, int>();
+            public static Dictionary<string, string> maps = new Dictionary<string, string>();
+            Screen tv;
             ScreenActionBar actionBar;
+            GameActionMenu gameActionMenu;
+            PlayerStatsWindow playerStatsWindow;
+            DialogWindow dialogWindow;
             string controls = "< v ^ > Menu";
             // get a subset of the item library
             Dictionary<string, Dictionary<string, string>> ItemsOfType(string type)
@@ -60,6 +65,16 @@ namespace IngameScript
             //-------------------------------------------------------------------
             public GameRPG(string game, ScreenActionBar actionBar)
             {
+                playerGear.Clear();
+                playerInventory.Clear();
+                playerStats.Clear();
+                playerMaxStats.Clear();
+                enemyStats.Clear();
+                gameBools.Clear();
+                gameInts.Clear();
+                maps.Clear();
+                itemStats.Clear();
+                AnimatedCharacter.CharacterLibrary.Clear();
                 GridInfo.Echo("Loading game: " + game);
                 this.actionBar = actionBar;
                 actionBar.SetActions(controls);
@@ -75,6 +90,7 @@ namespace IngameScript
                 loadGraphics();                
                 loadMapsList();
                 player = new AnimatedCharacter(AnimatedCharacter.CharacterLibrary["player"]);
+                Say = ShowDialog;
             }
             // parse game info
             void parseInfo(string data)
@@ -206,22 +222,36 @@ namespace IngameScript
                     if (part.Contains("type:player")) parsePlayer(part);
                 }
             }
+            bool firstLoadMap = true;
             public void LoadMap(string map_name)
             {
                 GridInfo.Echo("LoadMap: " + map_name);
                 if (!maps.ContainsKey(map_name)) return;
                 currentMap = map_name;
                 GridInfo.Echo("map address: " + maps[map_name]);
+                if (!firstLoadMap)
+                {
+                    map.RemoveFromScreen(tv);
+                    map.ClearMap();
+                }
                 map.LoadMap(SceneCollection.GetScene(name+"."+maps[map_name]));
+                if (!firstLoadMap)
+                {
+                    tv.RemoveSprite(player);
+                    map.AddToScreen(tv);
+                    tv.AddSprite(player);
+                }
                 map.SetViewCenter(playerX, playerY);
                 player.Position = map.GridPosToScreenPos(playerX, playerY);
                 GridInfo.Echo("player position: ("+ playerX+", "+ playerY+ ") " + player.Position);
+                firstLoadMap = false;
             }
             //-------------------------------------------------------------------
             // add to screen
             //-------------------------------------------------------------------
             public void AddToScreen(Screen screen)
             {
+                tv = screen;
                 map.AddToScreen(screen);
                 screen.AddSprite(player);
             }
@@ -240,9 +270,22 @@ namespace IngameScript
                 map.MoveNPCs();
                 player.Position = map.GridPosToScreenPos(playerX, playerY);
             }
+            void ShowDialog(string dialog)
+            {
+                dialogWindow = new DialogWindow(dialog, new Vector2(500, 100),actionBar);
+                dialogWindow.AddToScreen(tv);
+
+            }
+            //-------------------------------------------------------------------
+            // handle input
+            //-------------------------------------------------------------------
             public string HandleInput(string input)
             {
-                string action = actionBar.HandleInput(input);
+                if(playerStatsWindow != null) playerStatsWindow.Update(playerStats);
+                string action = "";
+                if (dialogWindow != null) action = dialogWindow.HandleInput(input);
+                else if(gameActionMenu == null) action = actionBar.HandleInput(input);
+                else action = gameActionMenu.HandleInput(input);
                 GridInfo.Echo("game: input: " +input+ " -> action: " + action);
                 if(action == "<")
                 {
@@ -265,13 +308,40 @@ namespace IngameScript
                     player.SetDirection("down");
                     TryMovePlayer(playerX, playerY + 1);
                 }
-                else if(action == "Menu")
+                else if(action == "menu")
                 {
-                    //show in game menu (todo)
-                    GridInfo.Echo("show in game menu");
+                    gameActionMenu = new GameActionMenu("Menu", 255, actionBar, GetNPCActions());
+                    gameActionMenu.AddToScreen(tv);
+                    playerStatsWindow = new PlayerStatsWindow(playerStats, 155);
+                    playerStatsWindow.AddToScreen(tv);
+                    actionBar.SetActions(gameActionMenu.menuScrollActions);
+                    return "";
+                }
+                else if(action == "back")
+                {
+                    gameActionMenu.RemoveFromScreen(tv);
+                    gameActionMenu = null;
+                    playerStatsWindow.RemoveFromScreen(tv);
+                    playerStatsWindow = null;
+                    actionBar.SetActions(controls);
+                    return "";
+                }
+                else if(action == "close")
+                {
+                    dialogWindow.RemoveFromScreen(tv);
+                    dialogWindow = null;
+                    if(gameActionMenu != null)
+                    {
+                        gameActionMenu.RemoveFromScreen(tv);
+                        gameActionMenu = null;
+                        playerStatsWindow.RemoveFromScreen(tv);
+                        playerStatsWindow = null;
+                        actionBar.SetActions(controls);
+                    }
                 }
                 return action;
             }
+            //Try move player
             public void TryMovePlayer(int x, int y)
             {
                 GridInfo.Echo("TryMovePlayer: (" + x + ", " + y + ")");
@@ -279,11 +349,51 @@ namespace IngameScript
                 GridInfo.Echo("is ground");
                 if(map.IsOccupied(x,y)) return;
                 GridInfo.Echo("not occupied");
+                TilemapExit exit = map.ExitOn(x, y);
+                if(exit != null)
+                {
+                    GridInfo.Echo("exit: " + exit.Map);
+                    LoadMap(exit.Map);
+                    playerX = exit.MapX;
+                    playerY = exit.MapY;
+                    map.SetViewCenter(playerX, playerY);
+                    player.Position = map.GridPosToScreenPos(playerX, playerY);
+                    return;
+                }
                 playerX = x;
                 playerY = y;
                 map.SetViewCenter(playerX, playerY);
                 player.Position = map.GridPosToScreenPos(playerX, playerY);
             }
+            // get game actions from npc in front of player (1 or 2 tiles away)
+            public List<GameAction> GetNPCActions() {                 
+                List<GameAction> actions = new List<GameAction>();
+                int x_offset = 0;
+                int y_offset = 0;
+                if (player.Direction == "up") y_offset--;
+                else if (player.Direction == "down") y_offset++;
+                else if (player.Direction == "left") x_offset--;
+                else if (player.Direction == "right") x_offset++;
+                // directly in front of player
+                npc npc = map.GetNPCOn(playerX + x_offset, playerY + y_offset);
+                if (npc != null && npc.NPCVisible)
+                {
+                    actions = npc.actions;
+                    npc.FacePlayer(player);
+                }
+                else if (map.IsShopCounter(playerX + x_offset, playerY + y_offset))
+                {
+                    // 2 tiles away (like a shop keeper on the other side of a wall)
+                    npc = map.GetNPCOn(playerX + (x_offset * 2), playerY + (y_offset * 2));
+                    if (npc != null && npc.NPCVisible)
+                    {
+                        actions = npc.actions;
+                        npc.FacePlayer(player);
+                    }
+                }
+                return actions;
+            }
+            //-------------------------------------------------------------------
         }
         //-----------------------------------------------------------------------
     }

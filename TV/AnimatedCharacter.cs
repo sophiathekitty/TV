@@ -70,6 +70,7 @@ namespace IngameScript
             Dictionary<string, string[]> spriteData = new Dictionary<string,string[]>();
             string type = "";
             string direction = "down";
+            public string Direction { get { return direction; } set { SetDirection(value); } }
             public int X;
             public int Y;
             public AnimatedCharacter(string element) : base(ScreenSpriteAnchor.TopLeft,Vector2.Zero,Tilemap.fontSize,new Vector2(16,16),Color.White,"Monospace","",TextAlignment.LEFT,SpriteType.TEXT)
@@ -88,10 +89,14 @@ namespace IngameScript
                     }
                 }
             }
-            public void SetDirection(string dir)
+            public int DirectionCount()
+            {
+                return spriteData.Count;
+            }
+            public void SetDirection(string dir, bool useDefault = true)
             {
                 if(spriteData.ContainsKey(dir)) direction = dir;
-                else direction = spriteData.Keys.First();
+                else if(useDefault) direction = spriteData.Keys.First();
                 //Data = spriteData[direction][0];
             }
             int frame = 0;

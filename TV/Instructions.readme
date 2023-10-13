@@ -1,11 +1,3 @@
 ﻿TV Reciever and Game Console
 -----------
-
-This script handles displaying different types of scenes. these can be either 
-an animated scene, or an interactive scene. it expects a block with a textsurface
-and "TV" in the name. (ideally "TV" as the custom name to avoid looking for it)
-
-this script will work with tv broadcasters that can transmit scenes to this TV reciever.
-it will also maybe include a couple simple games that can be played on the TV.
-
-readme: https://github.com/sophiathekitty/TV#readme
+see readme: https://github.com/sophiathekitty/TV#readme

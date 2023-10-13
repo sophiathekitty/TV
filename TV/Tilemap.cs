@@ -40,6 +40,7 @@ namespace IngameScript
             string groundTiles = "";
             string toxicTiles = "";
             string dangerTiles = "";
+            string counterTiles = ""; // can get actions through these...
             float screenWidth = 0;
             float screenHeight = 0;
             int viewPortWidth = 11;
@@ -51,6 +52,7 @@ namespace IngameScript
             static int resolutionWidth = 178;
             static int resolutionHeight = 107;
             List<npc> npcs = new List<npc>();
+            List<TilemapExit> exits = new List<TilemapExit>();
             public Vector2 TileSize
             {
                 get
@@ -91,7 +93,7 @@ namespace IngameScript
             public bool IsGround(int x, int y)
             {
                 char tile = GetTile(x, y);
-                GridInfo.Echo("IsGround: " + tile +" ??? " + groundTiles);
+                //GridInfo.Echo("IsGround: " + tile +" ??? " + groundTiles);
                 return groundTiles.Contains(tile);
             }
             // is this tile toxic?
@@ -110,9 +112,30 @@ namespace IngameScript
             {
                 foreach(npc npc in npcs)
                 {
-                    if (npc.BlocksMovement && npc.X == x && npc.Y == y) return true;
+                    if (npc.BlocksMovement && npc.X == x && npc.Y == y && npc.NPCVisible) return true;
                 }
                 return false;
+            }
+            public TilemapExit ExitOn(int x, int y)
+            {
+                foreach(TilemapExit exit in exits)
+                {
+                    if (exit.X == x && exit.Y == y) return exit;
+                }
+                return null;
+            }
+            public bool IsShopCounter(int x, int y)
+            {
+                char tile = GetTile(x, y);
+                return counterTiles.Contains(tile);
+            }
+            public npc GetNPCOn(int x, int y)
+            {
+                foreach(npc npc in npcs)
+                {
+                    if (npc.X == x && npc.Y == y) return npc;
+                }
+                return null;
             }
             // load the tile set from a string
             public void LoadTiles(string data)
@@ -139,6 +162,7 @@ namespace IngameScript
                                 else if (pair[0] == "danger") dangerTiles = pair[1];
                                 else if (pair[0] == "width") tileWidth = int.Parse(pair[1]);
                                 else if (pair[0] == "height") tileHeight = int.Parse(pair[1]);
+                                else if (pair[0] == "counter") counterTiles = pair[1];
                             }
                         }
                         if(tileHeight != 0)  viewPortHeight = (int)(resolutionHeight / tileHeight);
@@ -186,7 +210,19 @@ namespace IngameScript
                         // load an npc
                         npcs.Add(npc.MakeNPC(part));
                     }
+                    else if (part.StartsWith("type:exit"))
+                    {
+                        // load an exit
+                        exits.Add(new TilemapExit(part));
+                    }
                 }
+            }
+            // clear current map so we can load a new one
+            public void ClearMap()
+            {
+                tileMap = null;
+                npcs.Clear();
+                exits.Clear();
             }
             public void SetViewCenter(int x, int y)
             {
@@ -308,6 +344,7 @@ namespace IngameScript
                     int x = npc.X - viewPortX;
                     int y = npc.Y - viewPortY;
                     npc.Position = new Vector2(x * tileSize.X, y * tileSize.Y);
+                    npc.Visible = (npc.Y < viewPortY + viewPortHeight && npc.NPCVisible);
                 }
             }
             public void RemoveFromScreen(Screen screen)

@@ -42,10 +42,14 @@
     <Compile Include="AnimatedSceneEditor.cs" />
     <Compile Include="AnimatedSceneEditorMenu.cs" />
     <Compile Include="AnimatedSpriteEditMenu.cs" />
+    <Compile Include="DialogWindow.cs" />
+    <Compile Include="GameAction.cs" />
+    <Compile Include="GameActionMenu.cs" />
     <Compile Include="GameRPG.cs" />
     <Compile Include="MainMenu.cs" />
     <Compile Include="npc.cs" />
     <Compile Include="OptionMenu.cs" />
+    <Compile Include="PlayerStatsWindow.cs" />
     <Compile Include="SceneCollection.cs" />
     <Compile Include="ScreenActionBar.cs" />
     <Compile Include="AnimatedScene.cs" />
@@ -74,6 +78,7 @@
     <Compile Include="SpriteOptions.cs" />
     <Compile Include="Subtitles.cs" />
     <Compile Include="Tilemap.cs" />
+    <Compile Include="TilemapExit.cs" />
     <Compile Include="TV.cs" />
     <Compile Include="TVMenus.cs" />
   </ItemGroup>

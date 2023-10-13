@@ -314,6 +314,18 @@ namespace IngameScript
                         game.Update();
                         return "";
                     }
+                    else if(action == "quit game")
+                    {
+                        game.RemoveFromScreen(this);
+                        game = null;
+                        actionBar.RemoveFromScreen(this);
+                        menus.Hide();
+                        barVisible = false;
+                        menuVisible = false;
+                        barTimeout = 0;
+                        PlayRandomShow();
+                        return "";
+                    }
                     return action;
                 }
                 actionBar.AddToScreen(this);
