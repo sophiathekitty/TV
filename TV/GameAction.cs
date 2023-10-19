@@ -54,7 +54,7 @@ namespace IngameScript
                 string[] parts = element.Split(';');
                 foreach (string part in parts)
                 {
-                    if (part.StartsWith("action:"))
+                    if (part.StartsWith("action:") || part.StartsWith("yes:") || part.StartsWith("no:"))
                     {
                         string[] info = part.Split(':');
                         Name = info[1];
@@ -116,32 +116,45 @@ namespace IngameScript
                         string[] pair = param.Split('=');
                         SetValue(pair[0], pair[1]);
                     }
+                    else if(cmd == "setto")
+                    {
+                        string[] pair = param.Split('=');
+                        SetValue(pair[0], GetValue(pair[1], me));
+                    }
                     else if(cmd == "add")
                     {
                         string[] pair = param.Split('=');
                         float value = GetValueAs<float>(pair[0],me);
-                        value += float.Parse(pair[1]);
+                        float value2 = 0;
+                        if (float.TryParse(pair[1], out value2)) value += value2;
+                        else value += GetValueAs<float>(pair[1], me);
                         SetValue(pair[0], value.ToString());
                     }
                     else if(cmd == "sub")
                     {
                         string[] pair = param.Split('=');
                         float value = GetValueAs<float>(pair[0], me);
-                        value -= float.Parse(pair[1]);
+                        float value2 = 0;
+                        if (float.TryParse(pair[1], out value2)) value -= value2;
+                        else value -= GetValueAs<float>(pair[1], me);
                         SetValue(pair[0], value.ToString());
                     }
                     else if(cmd == "mul")
                     {
                         string[] pair = param.Split('=');
                         float value = GetValueAs<float>(pair[0], me);
-                        value *= float.Parse(pair[1]);
+                        float value2 = 0;
+                        if (float.TryParse(pair[1], out value2)) value *= value2;
+                        else value *= GetValueAs<float>(pair[1], me);
                         SetValue(pair[0], value.ToString());
                     }
                     else if(cmd == "div")
                     {
                         string[] pair = param.Split('=');
                         float value = GetValueAs<float>(pair[0], me);
-                        value /= float.Parse(pair[1]);
+                        float value2 = 0;
+                        if (float.TryParse(pair[1], out value2)) value /= value2;
+                        else value /= GetValueAs<float>(pair[1], me);
                         SetValue(pair[0], value.ToString());
                     }
                     // give item
@@ -163,6 +176,20 @@ namespace IngameScript
                         GridInfo.Echo("GameAction: say: " + param);
                         GameRPG.Say(param);
                         return false;
+                    }
+                    else if(cmd == "ask")
+                    {
+                        GridInfo.Echo("GameAction: ask: " + param);
+                        GameRPG.Ask(param,me,Name);
+                        return false;
+                    }
+                    else if(cmd == "go")
+                    {
+                        string[] props = param.Split(',');
+                        string map = props[0];
+                        int x = int.Parse(props[1]);
+                        int y = int.Parse(props[2]);
+                        GameRPG.Go(map, x, y);
                     }
                     else if(cmd == "savegame")
                     {
@@ -216,7 +243,11 @@ namespace IngameScript
                 // find the object to set the value on
                 if (objectName == "player")
                 {
-                    GameRPG.playerStats[name] = float.Parse(value);
+                    GameRPG.playerStats[name] = double.Parse(value);
+                }
+                else if(objectName == "playerMax")
+                {
+                    GameRPG.playerMaxStats[name] = int.Parse(value);
                 }
                 else if(objectName == "")
                 {
@@ -278,6 +309,10 @@ namespace IngameScript
                 if (objectName == "player" && GameRPG.playerStats.ContainsKey(name))
                 {
                     return GameRPG.playerStats[name].ToString();
+                }
+                else if(objectName == "playerMax" && GameRPG.playerMaxStats.ContainsKey(name))
+                {
+                    return GameRPG.playerMaxStats[name].ToString();
                 }
                 else if (objectName == "")
                 {

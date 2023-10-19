@@ -29,6 +29,7 @@ namespace IngameScript
             public string Map;
             public int MapX;
             public int MapY;
+            public bool Edge = false;
             public TilemapExit(string element)
             {
                 string[] parts = element.Split(',');
@@ -40,6 +41,7 @@ namespace IngameScript
                     else if (pair[0] == "map") Map = pair[1];
                     else if (pair[0] == "targetX") MapX = int.Parse(pair[1]);
                     else if (pair[0] == "targetY") MapY = int.Parse(pair[1]);
+                    else if (pair[0] == "exit" && pair[1] == "edge") Edge = true;
                 }
             }
         }

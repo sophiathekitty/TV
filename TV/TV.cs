@@ -307,7 +307,7 @@ namespace IngameScript
                         if (SceneCollection.games.Count > 0) GridInfo.Echo("TV:Games:Scene: " + SceneCollection.games[0]);
                         if (SceneCollection.games.Count > 0) game = new GameRPG(SceneCollection.games[0], actionBar);
                         GridInfo.Echo("TV:Games:GameCreated");
-                        game.LoadMap("throne");
+                        game.LoadMap("throne",2,6);
                         GridInfo.Echo("TV:Games:MapLoaded");
                         game.AddToScreen(this);
                         GridInfo.Echo("TV:Games:GameAddedToScreen");

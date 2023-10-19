@@ -31,7 +31,7 @@ namespace IngameScript
         //-----------------------------------------------------------------------
         public class Tilemap
         {
-            public static float fontSize = 0.2f;
+            public static float fontSize = 0.204f;
             List<ScreenSprite> visibleTiles = new List<ScreenSprite>();
             string[] tileMap;
             int mapWidth;
@@ -102,6 +102,13 @@ namespace IngameScript
                 char tile = GetTile(x, y);
                 return toxicTiles.Contains(tile);
             }
+            public int ToxicLevel(int x, int y)
+            {
+                char tile = GetTile(x, y);
+                int index = toxicTiles.IndexOf(tile);
+                if (index < 0) return 0;
+                return index + 1;
+            }
             // is this tile dangerous?
             public bool IsDanger(int x, int y)
             {
@@ -118,9 +125,13 @@ namespace IngameScript
             }
             public TilemapExit ExitOn(int x, int y)
             {
-                foreach(TilemapExit exit in exits)
+                bool edge = false;
+                if(x < 0 || x >= mapWidth || y < 0 || y >= mapHeight) edge = true;
+                GridInfo.Echo("ExitOn: " + x + "," + y + " edge:"+edge.ToString());
+                foreach (TilemapExit exit in exits)
                 {
-                    if (exit.X == x && exit.Y == y) return exit;
+                    if (edge && (exit.Edge || exit.X == -1 || exit.Y == -1)) return exit;
+                    else if (exit.X == x && exit.Y == y) return exit;
                 }
                 return null;
             }
@@ -186,12 +197,14 @@ namespace IngameScript
             // load a tile map from a string
             public void LoadMap(string data)
             {
-                GridInfo.Echo("LoadMap:");
+                GridInfo.Echo("LoadMap: data: "+data.Length);
                 string[] parts = data.Split('║');
+                GridInfo.Echo("LoadMap: parts: "+parts.Length);    
                 foreach(string part in parts)
                 {
                     if (part.StartsWith("type:map"))
                     {
+                        GridInfo.Echo("LoadMap: map: "+part.Length);
                         // get map tiles
                         string[] map_parts = part.Split('═');
                         if(map_parts.Length != 2) return;

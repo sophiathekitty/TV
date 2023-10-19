@@ -50,6 +50,8 @@ namespace IngameScript
                 return null;
             }
             public List<GameAction> actions = new List<GameAction>();
+            public Dictionary<string,GameAction> yes = new Dictionary<string, GameAction>();
+            public Dictionary<string,GameAction> no = new Dictionary<string, GameAction>(); 
             bool randomWalk = false;
             public bool BlocksMovement = true;
             int walkTimer = 0;
@@ -100,6 +102,18 @@ namespace IngameScript
                     {
                         GridInfo.Echo("npc: constructor: action:");
                         actions.Add(new GameAction(part,this));
+                    }
+                    else if(part.Contains("yes:"))
+                    {
+                        GameAction y = new GameAction(part, this);
+                        yes.Add(y.Name, y);
+                        GridInfo.Echo("npc: constructor: yes:"+y.Name);
+                    }
+                    else if (part.Contains("no:"))
+                    {
+                        GameAction n = new GameAction(part, this);
+                        no.Add(n.Name, n);
+                        GridInfo.Echo("npc: constructor: no:"+n.Name);
                     }
                     // else it's setting a properety
                     else if (part.StartsWith("visible"))

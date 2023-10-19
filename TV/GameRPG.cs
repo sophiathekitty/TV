@@ -28,6 +28,10 @@ namespace IngameScript
         public class GameRPG
         {
             public static Action<string> Say;
+            public static Action<string,int,int> Go;
+            public static Action<string,npc,string> Ask;
+            npc promptNPC = null;
+            string promptTag = "";
             string title;
             string name;
             Tilemap map;
@@ -44,6 +48,7 @@ namespace IngameScript
             public static Dictionary<string, bool> gameBools = new Dictionary<string, bool>();
             public static Dictionary<string, int> gameInts = new Dictionary<string, int>();
             public static Dictionary<string, string> maps = new Dictionary<string, string>();
+            string playerHP = "hp";
             Screen tv;
             ScreenActionBar actionBar;
             GameActionMenu gameActionMenu;
@@ -91,6 +96,8 @@ namespace IngameScript
                 loadMapsList();
                 player = new AnimatedCharacter(AnimatedCharacter.CharacterLibrary["player"]);
                 Say = ShowDialog;
+                Ask = ShowDialogPrompt;
+                Go = LoadMap;
             }
             // parse game info
             void parseInfo(string data)
@@ -223,7 +230,7 @@ namespace IngameScript
                 }
             }
             bool firstLoadMap = true;
-            public void LoadMap(string map_name)
+            public void LoadMap(string map_name, int x, int y)
             {
                 GridInfo.Echo("LoadMap: " + map_name);
                 if (!maps.ContainsKey(map_name)) return;
@@ -241,6 +248,8 @@ namespace IngameScript
                     map.AddToScreen(tv);
                     tv.AddSprite(player);
                 }
+                playerX = x;
+                playerY = y;
                 map.SetViewCenter(playerX, playerY);
                 player.Position = map.GridPosToScreenPos(playerX, playerY);
                 GridInfo.Echo("player position: ("+ playerX+", "+ playerY+ ") " + player.Position);
@@ -274,7 +283,15 @@ namespace IngameScript
             {
                 dialogWindow = new DialogWindow(dialog, new Vector2(500, 100),actionBar);
                 dialogWindow.AddToScreen(tv);
-
+            }
+            void ShowDialogPrompt(string dialog, npc npc, string tag)
+            {
+                GridInfo.Echo("ShowDialogPrompt: " + dialog);
+                ShowDialog(dialog);
+                promptNPC = npc;
+                actionBar.SetActions("Yes No     Back");
+                promptTag = tag;
+                GridInfo.Echo("ShowDialogPrompt: " + promptTag);
             }
             //-------------------------------------------------------------------
             // handle input
@@ -319,15 +336,18 @@ namespace IngameScript
                 }
                 else if(action == "back")
                 {
-                    gameActionMenu.RemoveFromScreen(tv);
+                    /*gameActionMenu.RemoveFromScreen(tv);
                     gameActionMenu = null;
                     playerStatsWindow.RemoveFromScreen(tv);
                     playerStatsWindow = null;
-                    actionBar.SetActions(controls);
+                    actionBar.SetActions(controls);*/
+                    CloseMenu();
                     return "";
                 }
                 else if(action == "close")
                 {
+                    CloseDialog();
+                    /*
                     dialogWindow.RemoveFromScreen(tv);
                     dialogWindow = null;
                     if(gameActionMenu != null)
@@ -338,32 +358,71 @@ namespace IngameScript
                         playerStatsWindow = null;
                         actionBar.SetActions(controls);
                     }
+                    */
+                }
+                else if(promptNPC != null && action == "yes")
+                {
+                    GridInfo.Echo("promptNPC: " + promptNPC.yes.Count+ " :: "+promptTag);
+                    dialogWindow.RemoveFromScreen(tv);
+                    dialogWindow = null;
+                    if (promptNPC.yes.ContainsKey(promptTag)) promptNPC.yes[promptTag].Run();
+                    promptNPC = null;
+                    promptTag = "";
+                    return "";
+                }
+                else if(promptNPC != null && action == "no")
+                {
+                    GridInfo.Echo("promptNPC: " + promptNPC.no.Count+" :: "+promptTag);
+                    dialogWindow.RemoveFromScreen(tv);
+                    dialogWindow = null;
+                    if (promptNPC.no.ContainsKey(promptTag)) promptNPC.no[promptTag].Run();
+                    promptNPC = null;
+                    promptTag = "";
+                    return "";
                 }
                 return action;
+            }
+            void CloseDialog()
+            {
+                CloseMenu();
+                if (dialogWindow == null) return;
+                dialogWindow.RemoveFromScreen(tv);
+                dialogWindow = null;
+            }
+            void CloseMenu()
+            {
+                if (gameActionMenu == null) return;
+                gameActionMenu.RemoveFromScreen(tv);
+                gameActionMenu = null;
+                playerStatsWindow.RemoveFromScreen(tv);
+                playerStatsWindow = null;
+                actionBar.SetActions(controls);
             }
             //Try move player
             public void TryMovePlayer(int x, int y)
             {
                 GridInfo.Echo("TryMovePlayer: (" + x + ", " + y + ")");
-                if (!map.IsGround(x, y)) return;
-                GridInfo.Echo("is ground");
-                if(map.IsOccupied(x,y)) return;
-                GridInfo.Echo("not occupied");
                 TilemapExit exit = map.ExitOn(x, y);
-                if(exit != null)
+                if (map.IsOccupied(x, y)) return;
+                GridInfo.Echo("not occupied");
+                if (exit != null)
                 {
                     GridInfo.Echo("exit: " + exit.Map);
-                    LoadMap(exit.Map);
-                    playerX = exit.MapX;
-                    playerY = exit.MapY;
-                    map.SetViewCenter(playerX, playerY);
-                    player.Position = map.GridPosToScreenPos(playerX, playerY);
+                    LoadMap(exit.Map, exit.MapX, exit.MapY);
+                    //playerX = exit.MapX;
+                    //playerY = exit.MapY;
+                    //map.SetViewCenter(playerX, playerY);
+                    //player.Position = map.GridPosToScreenPos(playerX, playerY);
                     return;
                 }
+                if (!map.IsGround(x, y)) return;
+                GridInfo.Echo("is ground");
                 playerX = x;
                 playerY = y;
                 map.SetViewCenter(playerX, playerY);
                 player.Position = map.GridPosToScreenPos(playerX, playerY);
+                // take damage from toxic tiles
+                if(playerStats.ContainsKey(playerHP)) playerStats[playerHP] -= map.ToxicLevel(x, y);
             }
             // get game actions from npc in front of player (1 or 2 tiles away)
             public List<GameAction> GetNPCActions() {                 
