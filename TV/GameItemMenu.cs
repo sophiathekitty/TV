@@ -44,7 +44,11 @@ namespace IngameScript
                 foreach(GameItem item in items)
                 {
                     if (inventory.ContainsKey(item.Name)) item.count = inventory[item.Name];
-                    if(menuItems.Count > i && menuItems[i].Label == item.Name) menuItems[i].Data = item.count.ToString();
+                    if (menuItems.Count > i && menuItems[i].Label == item.Name)
+                    {
+                        if (GameRPG.playerGear.ContainsValue(item.Name)) menuItems[i].Data = "E";
+                        else menuItems[i].Data = item.count.ToString();
+                    }
                     i++;
                 }
                 

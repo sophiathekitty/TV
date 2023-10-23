@@ -180,7 +180,7 @@ namespace IngameScript
                 if(back != null)
                 {
                     back.Position = new Vector2(-5,10);
-                    back.Size = new Vector2(Width+10, Height+30);
+                    back.Size = new Vector2(Width+50, Height+40);
                     screen.AddSprite(back);
                 }
                 title.Position = position;

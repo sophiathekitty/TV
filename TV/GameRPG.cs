@@ -150,6 +150,7 @@ namespace IngameScript
                 {
                     string[] pair = part.Split(':');
                     playerGear.Add(pair[0], pair[1]);
+                    if (!playerInventory.ContainsKey(pair[1])) playerInventory.Add(pair[1], 1);
                 }
             }
             // parse player location
