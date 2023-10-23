@@ -52,7 +52,7 @@ namespace IngameScript
 
                 foreach (string show in availableShows)
                 {
-                    GridInfo.Echo("TV:Show: " + show);
+                    //GridInfo.Echo("TV:Show: " + show);
                     shows.Add(show);
                 }
                 // clone the list of shows so we can remove them as we go
@@ -62,9 +62,9 @@ namespace IngameScript
                     /*
                     // start the first show
                     int index = new Random().Next(availableShows.Count);
-                    GridInfo.Echo("TV:Starting:Show: " + availableShows[index]);
+                    //GridInfo.Echo("TV:Starting:Show: " + availableShows[index]);
                     currentShow = new ShowHandler(availableShows[index], ShowDone);
-                    GridInfo.Echo("TV:Starting:Scene: " + currentShow.Current);
+                    //GridInfo.Echo("TV:Starting:Scene: " + currentShow.Current);
                     SetScene(SceneCollection.GetScene(currentShow.Current));
                     */
                     PlayRandomShow();
@@ -84,19 +84,19 @@ namespace IngameScript
             // hand show done event
             void ShowDone(string show)
             {
-                GridInfo.Echo("TV:ShowDone(" + show+")");
+                //GridInfo.Echo("TV:ShowDone(" + show+")");
                 if (currentShow != null)
                 {
                     currentShow.Dispose();
                 }
                 currentShow = new ShowHandler(show, ShowDone);
                 SetScene(SceneCollection.GetScene(currentShow.Current));
-                GridInfo.Echo("TV:ShowDone:Scene: " + currentShow.Current);
+                //GridInfo.Echo("TV:ShowDone:Scene: " + currentShow.Current);
 
             }
             void PlayRandomShow()
             {
-                GridInfo.Echo("TV:PlayRandomShow shows: "+shows.Count);
+                //GridInfo.Echo("TV:PlayRandomShow shows: "+shows.Count);
                 // select a random show from the shows list
                 if (shows.Count > 0)
                 {
@@ -104,7 +104,7 @@ namespace IngameScript
                     currentShow = new ShowHandler(shows[index], ShowDone);
                     SetScene(SceneCollection.GetScene(currentShow.Current));
                     shows.RemoveAt(index);
-                    GridInfo.Echo("TV:PlayRandomShow: " + index + " / " + shows.Count);
+                    //GridInfo.Echo("TV:PlayRandomShow: " + index + " / " + shows.Count);
                 }
                 else
                 {
@@ -114,7 +114,7 @@ namespace IngameScript
                     shows.Clear();
                     foreach (string show in availableShows)
                     {
-                        GridInfo.Echo("TV:Show: " + show);
+                        //GridInfo.Echo("TV:Show: " + show);
                         if(show != currentShow.Name) shows.Add(show);
                     }
                     if(shows.Count > 0) PlayRandomShow();
@@ -182,6 +182,10 @@ namespace IngameScript
                     currentScene.Update();
                     
                 }
+                if(game != null)
+                {
+                    game.Update();
+                }
                 PreDraw();
             }
             void OnAnimatedSceneDone()
@@ -193,7 +197,7 @@ namespace IngameScript
                     {
                         /*
                         // restart the show
-                        GridInfo.Echo("TV:Show:Done: " + currentShow.Name);
+                        //GridInfo.Echo("TV:Show:Done: " + currentShow.Name);
                         currentShow.Dispose();
                         // select a random show
                         List<string> availableShows = SceneCollection.shows.ToList();
@@ -201,7 +205,7 @@ namespace IngameScript
                         currentShow = new ShowHandler(availableShows[index], ShowDone);
                         SetScene(SceneCollection.GetScene(currentShow.Current));
                         */
-                        GridInfo.Echo("TV:Show:Done: " + currentShow.Name);
+                        //GridInfo.Echo("TV:Show:Done: " + currentShow.Name);
                         PlayRandomShow();
                     }
                     else
@@ -296,21 +300,21 @@ namespace IngameScript
                     }
                     else if(action == "games")
                     {
-                        GridInfo.Echo("TV:Games");
+                        //GridInfo.Echo("TV:Games");
                         if(currentScene != null) currentScene.RemoveFromScreen(this);
-                        GridInfo.Echo("TV:Games:SceneRemoved");
+                        //GridInfo.Echo("TV:Games:SceneRemoved");
                         if (currentShow != null) currentShow.Dispose();
-                        GridInfo.Echo("TV:Games:ShowDisposed");
+                        //GridInfo.Echo("TV:Games:ShowDisposed");
                         currentShow = null;
                         menus.Hide();
                         // for now we're going to load the first game in the games list to see if it works
                         if (SceneCollection.games.Count > 0) GridInfo.Echo("TV:Games:Scene: " + SceneCollection.games[0]);
                         if (SceneCollection.games.Count > 0) game = new GameRPG(SceneCollection.games[0], actionBar);
-                        GridInfo.Echo("TV:Games:GameCreated");
+                        //GridInfo.Echo("TV:Games:GameCreated");
                         game.LoadMap("throne",2,6);
-                        GridInfo.Echo("TV:Games:MapLoaded");
+                        //GridInfo.Echo("TV:Games:MapLoaded");
                         game.AddToScreen(this);
-                        GridInfo.Echo("TV:Games:GameAddedToScreen");
+                        //GridInfo.Echo("TV:Games:GameAddedToScreen");
                         game.Update();
                         return "";
                     }

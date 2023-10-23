@@ -18,6 +18,7 @@ using VRage.Game.ModAPI.Ingame.Utilities;
 using VRage.Game.ObjectBuilders.Definitions;
 using VRageMath;
 
+
 namespace IngameScript
 {
     partial class Program
@@ -25,7 +26,7 @@ namespace IngameScript
         //-----------------------------------------------------------------------
         // a very simple RPG game based on dragon warrior for the NES
         //-----------------------------------------------------------------------
-        public class GameRPG
+        public class GameRPG : IGameVars
         {
             public static Action<string> Say;
             public static Action<string,int,int> Go;
@@ -35,23 +36,28 @@ namespace IngameScript
             string title;
             string name;
             Tilemap map;
-            int playerX = 0;
-            int playerY = 0;
+            public static int playerX = 0;
+            public static int playerY = 0;
             string currentMap = "";
             AnimatedCharacter player;
             public static Dictionary<string,double> playerStats = new Dictionary<string,double>();
             public static Dictionary<string,int> playerMaxStats = new Dictionary<string,int>();
             public static Dictionary<string,string> playerGear = new Dictionary<string,string>();
             public static Dictionary<string, int> playerInventory = new Dictionary<string, int>();
+            public static string playerStatus = "";
             public static Dictionary<string, int> enemyStats = new Dictionary<string, int>();
+            public static string enemyStatus = "";
+            public static string enemyName = "";
             public static Dictionary<string,Dictionary<string,string>> itemStats = new Dictionary<string,Dictionary<string,string>>();
             public static Dictionary<string, bool> gameBools = new Dictionary<string, bool>();
             public static Dictionary<string, int> gameInts = new Dictionary<string, int>();
             public static Dictionary<string, string> maps = new Dictionary<string, string>();
-            string playerHP = "hp";
+            public static Dictionary<string,GameAction> gameLogic = new Dictionary<string,GameAction>();
+            //string playerHP = "hp";
             Screen tv;
             ScreenActionBar actionBar;
             GameActionMenu gameActionMenu;
+            GameItemMenu gameItemMenu;
             PlayerStatsWindow playerStatsWindow;
             DialogWindow dialogWindow;
             string controls = "< v ^ > Menu";
@@ -79,8 +85,9 @@ namespace IngameScript
                 gameInts.Clear();
                 maps.Clear();
                 itemStats.Clear();
+                gameLogic.Clear();
                 AnimatedCharacter.CharacterLibrary.Clear();
-                GridInfo.Echo("Loading game: " + game);
+                //GridInfo.Echo("Loading game: " + game);
                 this.actionBar = actionBar;
                 actionBar.SetActions(controls);
                 name = game;
@@ -91,6 +98,7 @@ namespace IngameScript
                     if (part.Contains("type:player")) parsePlayer(part);
                     else if(part.Contains("type:game")) parseInfo(part);
                     else if(part.Contains("type:item")) parseItems(part);
+                    else if(part.Contains("type:logic")) parseGameLogic(part);
                 }
                 loadGraphics();                
                 loadMapsList();
@@ -98,11 +106,12 @@ namespace IngameScript
                 Say = ShowDialog;
                 Ask = ShowDialogPrompt;
                 Go = LoadMap;
+                GameAction.GameVars = this;
             }
             // parse game info
             void parseInfo(string data)
             {
-                GridInfo.Echo("parseInfo:");
+                //GridInfo.Echo("parseInfo:");
                 string[] vars = data.Split(',');
                 foreach(string var in vars)
                 {
@@ -114,7 +123,7 @@ namespace IngameScript
             // parse player info (create the default player)
             void parsePlayer(string data)
             {
-                GridInfo.Echo("parsePlayer:");
+                //GridInfo.Echo("parsePlayer:");
                 string[] parts = data.Split('═');
                 if(parts.Length > 1) parsePlayerStats(parts[1]);
                 if(parts.Length > 2) parsePlayerGear(parts[2]);
@@ -123,7 +132,7 @@ namespace IngameScript
             // parse player stats
             void parsePlayerStats(string data)
             {
-                GridInfo.Echo("parsePlayerStats:");
+                //GridInfo.Echo("parsePlayerStats:");
                 string[] parts = data.Split(',');
                 foreach(string part in parts)
                 {
@@ -135,7 +144,7 @@ namespace IngameScript
             // parse player gear
             void parsePlayerGear(string data)
             {
-                GridInfo.Echo("parsePlayerGear:");
+                //GridInfo.Echo("parsePlayerGear:");
                 string[] parts = data.Split(',');
                 foreach(string part in parts)
                 {
@@ -146,7 +155,7 @@ namespace IngameScript
             // parse player location
             void parsePlayerLocation(string data)
             {
-                GridInfo.Echo("parsePlayerLocation:");
+                //GridInfo.Echo("parsePlayerLocation:");
                 string[] parts = data.Split(',');
                 foreach(string part in parts)
                 {
@@ -187,6 +196,7 @@ namespace IngameScript
                     if(item_name != "") itemStats.Add(item_name,stats);
                 }
             }
+            // load graphics
             void loadGraphics()
             {
                 if (name == "") return;
@@ -195,9 +205,10 @@ namespace IngameScript
                 map.LoadTiles(SceneCollection.GetScene(name + ".Tiles.0.CustomData"));
                 AnimatedCharacter.LoadCharacters(SceneCollection.GetScene(name + ".Characters.0.CustomData"));
             }
+            // load maps list
             void loadMapsList()
             {
-                GridInfo.Echo("loadMapsList:");
+                //GridInfo.Echo("loadMapsList:");
                 string[] parts = SceneCollection.GetScene(name + ".Maps.0.CustomData").Split('║');
                 if (!parts[0].Contains("type:atlas")) return;
                 foreach(string part in parts)
@@ -217,6 +228,20 @@ namespace IngameScript
                     }
                 }
             }
+            // parse game logic
+            void parseGameLogic(string data)
+            {
+                string[] actions = data.Split('═');
+                foreach(string action in actions)
+                {
+                    if (action.StartsWith("action:"))
+                    {
+                        GameAction gameAction = new GameAction(action);
+                        gameLogic.Add(gameAction.Name, gameAction);
+                        GridInfo.Echo("gameLogic: " + gameAction.Name);
+                    }
+                }
+            }
             //-------------------------------------------------------------------
             // load a game save
             // note: i haven't figured out what the save string looks like yet
@@ -230,12 +255,16 @@ namespace IngameScript
                 }
             }
             bool firstLoadMap = true;
+            //-------------------------------------------------------------------
+            // load a map
+            //-------------------------------------------------------------------
             public void LoadMap(string map_name, int x, int y)
             {
-                GridInfo.Echo("LoadMap: " + map_name);
+                CloseDialog();
+                //GridInfo.Echo("LoadMap: " + map_name);
                 if (!maps.ContainsKey(map_name)) return;
                 currentMap = map_name;
-                GridInfo.Echo("map address: " + maps[map_name]);
+                //GridInfo.Echo("map address: " + maps[map_name]);
                 if (!firstLoadMap)
                 {
                     map.RemoveFromScreen(tv);
@@ -247,13 +276,15 @@ namespace IngameScript
                     tv.RemoveSprite(player);
                     map.AddToScreen(tv);
                     tv.AddSprite(player);
+                    map.AddOverlayToScreen(tv);
                 }
                 playerX = x;
                 playerY = y;
                 map.SetViewCenter(playerX, playerY);
                 player.Position = map.GridPosToScreenPos(playerX, playerY);
-                GridInfo.Echo("player position: ("+ playerX+", "+ playerY+ ") " + player.Position);
+                //GridInfo.Echo("player position: ("+ playerX+", "+ playerY+ ") " + player.Position);
                 firstLoadMap = false;
+                Tilemap.name = map_name;
             }
             //-------------------------------------------------------------------
             // add to screen
@@ -263,6 +294,7 @@ namespace IngameScript
                 tv = screen;
                 map.AddToScreen(screen);
                 screen.AddSprite(player);
+                map.AddOverlayToScreen(screen);
             }
             // remove from screen
             public void RemoveFromScreen(Screen screen)
@@ -275,35 +307,60 @@ namespace IngameScript
             //-------------------------------------------------------------------
             public void Update()
             {
+                if(gameItemMenu != null) gameItemMenu.Update(playerInventory);
+                if(dialogWindow != null || gameActionMenu != null) return;
+                //GridInfo.Echo("game: update");
                 map.SetViewCenter(playerX, playerY);
+                //GridInfo.Echo("game: update: View Centered");
                 map.MoveNPCs();
+                //GridInfo.Echo("game: update: npcs moved");
                 player.Position = map.GridPosToScreenPos(playerX, playerY);
+                //GridInfo.Echo("game: update: player moved... update finished");
             }
             void ShowDialog(string dialog)
             {
-                dialogWindow = new DialogWindow(dialog, new Vector2(500, 100),actionBar);
-                dialogWindow.AddToScreen(tv);
+                if(dialogWindow == null) 
+                {
+                    dialogWindow = new DialogWindow(ParseDialogText(dialog), new Vector2(500, 100), actionBar);
+                    dialogWindow.AddToScreen(tv);
+                } 
+                else dialogWindow.Append(ParseDialogText(dialog));
             }
             void ShowDialogPrompt(string dialog, npc npc, string tag)
             {
-                GridInfo.Echo("ShowDialogPrompt: " + dialog);
+                //GridInfo.Echo("ShowDialogPrompt: " + dialog);
                 ShowDialog(dialog);
                 promptNPC = npc;
-                actionBar.SetActions("Yes No     Back");
+                actionBar.SetActions("Yes No   Close");
                 promptTag = tag;
-                GridInfo.Echo("ShowDialogPrompt: " + promptTag);
+                //GridInfo.Echo("ShowDialogPrompt: " + promptTag);
+            }
+            string ParseDialogText(string dialog)
+            {
+                foreach(var gameInt in gameInts)
+                {
+                    dialog = dialog.Replace("gameInts." + gameInt.Key, gameInt.Value.ToString());
+                }
+                foreach (var playerStat in playerStats)
+                {
+                    dialog = dialog.Replace("player." + playerStat.Key, playerStat.Value.ToString());
+                }
+                return dialog;
             }
             //-------------------------------------------------------------------
+            //
             // handle input
+            //
             //-------------------------------------------------------------------
             public string HandleInput(string input)
             {
                 if(playerStatsWindow != null) playerStatsWindow.Update(playerStats);
                 string action = "";
                 if (dialogWindow != null) action = dialogWindow.HandleInput(input);
-                else if(gameActionMenu == null) action = actionBar.HandleInput(input);
+                else if (gameItemMenu != null) action = gameItemMenu.HandleInput(input);
+                else if (gameActionMenu == null) action = actionBar.HandleInput(input);
                 else action = gameActionMenu.HandleInput(input);
-                GridInfo.Echo("game: input: " +input+ " -> action: " + action);
+                //GridInfo.Echo("game: input: " +input+ " -> action: " + action);
                 if(action == "<")
                 {
                     player.SetDirection("left");
@@ -336,33 +393,18 @@ namespace IngameScript
                 }
                 else if(action == "back")
                 {
-                    /*gameActionMenu.RemoveFromScreen(tv);
-                    gameActionMenu = null;
-                    playerStatsWindow.RemoveFromScreen(tv);
-                    playerStatsWindow = null;
-                    actionBar.SetActions(controls);*/
-                    CloseMenu();
+                    if (gameItemMenu != null) HideItemsMenu();
+                    else CloseMenu();
                     return "";
                 }
                 else if(action == "close")
                 {
                     CloseDialog();
-                    /*
-                    dialogWindow.RemoveFromScreen(tv);
-                    dialogWindow = null;
-                    if(gameActionMenu != null)
-                    {
-                        gameActionMenu.RemoveFromScreen(tv);
-                        gameActionMenu = null;
-                        playerStatsWindow.RemoveFromScreen(tv);
-                        playerStatsWindow = null;
-                        actionBar.SetActions(controls);
-                    }
-                    */
+                    if(gameActionMenu == null) actionBar.SetActions(controls);
                 }
                 else if(promptNPC != null && action == "yes")
                 {
-                    GridInfo.Echo("promptNPC: " + promptNPC.yes.Count+ " :: "+promptTag);
+                    //GridInfo.Echo("promptNPC: " + promptNPC.yes.Count+ " :: "+promptTag);
                     dialogWindow.RemoveFromScreen(tv);
                     dialogWindow = null;
                     if (promptNPC.yes.ContainsKey(promptTag)) promptNPC.yes[promptTag].Run();
@@ -372,7 +414,7 @@ namespace IngameScript
                 }
                 else if(promptNPC != null && action == "no")
                 {
-                    GridInfo.Echo("promptNPC: " + promptNPC.no.Count+" :: "+promptTag);
+                    //GridInfo.Echo("promptNPC: " + promptNPC.no.Count+" :: "+promptTag);
                     dialogWindow.RemoveFromScreen(tv);
                     dialogWindow = null;
                     if (promptNPC.no.ContainsKey(promptTag)) promptNPC.no[promptTag].Run();
@@ -380,8 +422,51 @@ namespace IngameScript
                     promptTag = "";
                     return "";
                 }
+                else if(action == "items")
+                {
+                    ShowItemsMenu();
+                    return "";
+                }
                 return action;
             }
+            void ShowItemsMenu()
+            {
+                GridInfo.Echo("ShowItemsMenu");
+                if(gameActionMenu != null) gameActionMenu.Visible = false;
+                List<GameItem> items = new List<GameItem>();
+                foreach(var item in playerInventory)
+                {
+                    GridInfo.Echo("item: " + item.Key + " = " + item.Value);
+                    if (!itemStats.ContainsKey(item.Key)) continue;
+                    GridInfo.Echo("item: " + item.Key + " = " + item.Value + " :: " + itemStats[item.Key]["item_type"]);
+                    if (itemStats[item.Key].ContainsKey("effect") && gameLogic.ContainsKey(itemStats[item.Key]["effect"]))
+                    {
+                        GridInfo.Echo("item: " + item.Key + " = " + item.Value + " :: " + itemStats[item.Key]["item_type"] + " :1: " + itemStats[item.Key]["effect"]);
+                        items.Add(new GameItem(item.Key, item.Value, gameLogic[itemStats[item.Key]["effect"]]));
+                    }
+                    else if (playerGear.ContainsKey(itemStats[item.Key]["item_type"]))
+                    {
+                        GridInfo.Echo("item: " + item.Key + " = " + item.Value + " :: " + itemStats[item.Key]["item_type"] + " :2: " + playerGear[itemStats[item.Key]["item_type"]]);
+                        items.Add(new GameItem(item.Key, itemStats[item.Key]["item_type"], item.Value));
+                    }
+                    else
+                    {
+                        GridInfo.Echo("item: " + item.Key + " = " + item.Value + " :: " + itemStats[item.Key]["item_type"] + " :3: " + item.Value);
+                        items.Add(new GameItem(item.Key, item.Value));
+                    }
+                }
+                GridInfo.Echo("ShowItemsMenu: " + items.Count);
+                gameItemMenu = new GameItemMenu("Items", 300, actionBar, items);
+                gameItemMenu.AddToScreen(tv);
+            }
+            void HideItemsMenu()
+            {
+                if(gameActionMenu != null) gameActionMenu.Visible = true;
+                if (gameItemMenu == null) return;
+                gameItemMenu.RemoveFromScreen(tv);
+                gameItemMenu = null;
+            }
+            // dialog window closed
             void CloseDialog()
             {
                 CloseMenu();
@@ -401,44 +486,44 @@ namespace IngameScript
             //Try move player
             public void TryMovePlayer(int x, int y)
             {
-                GridInfo.Echo("TryMovePlayer: (" + x + ", " + y + ")");
+                //GridInfo.Echo("TryMovePlayer: (" + x + ", " + y + ")");
                 TilemapExit exit = map.ExitOn(x, y);
                 if (map.IsOccupied(x, y)) return;
-                GridInfo.Echo("not occupied");
+                //GridInfo.Echo("not occupied");
                 if (exit != null)
                 {
-                    GridInfo.Echo("exit: " + exit.Map);
+                    //GridInfo.Echo("exit: " + exit.Map);
                     LoadMap(exit.Map, exit.MapX, exit.MapY);
-                    //playerX = exit.MapX;
-                    //playerY = exit.MapY;
-                    //map.SetViewCenter(playerX, playerY);
-                    //player.Position = map.GridPosToScreenPos(playerX, playerY);
                     return;
                 }
                 if (!map.IsGround(x, y)) return;
-                GridInfo.Echo("is ground");
+                //GridInfo.Echo("is ground");
                 playerX = x;
                 playerY = y;
                 map.SetViewCenter(playerX, playerY);
                 player.Position = map.GridPosToScreenPos(playerX, playerY);
-                // take damage from toxic tiles
-                if(playerStats.ContainsKey(playerHP)) playerStats[playerHP] -= map.ToxicLevel(x, y);
+                // do player step logic (for example, counting down radient spell effect)
+                if(gameLogic.ContainsKey("PlayerStep")) gameLogic["PlayerStep"].Run();
             }
-            // get game actions from npc in front of player (1 or 2 tiles away)
+            // get game actions from npc in front of player (0, 1, or 2 tiles away)
             public List<GameAction> GetNPCActions() {                 
-                List<GameAction> actions = new List<GameAction>();
                 int x_offset = 0;
                 int y_offset = 0;
+                npc npc = map.GetNPCOn(playerX + x_offset, playerY + y_offset);
+                if (npc != null && npc.NPCVisible)
+                {
+                    return npc.actions;
+                }
                 if (player.Direction == "up") y_offset--;
                 else if (player.Direction == "down") y_offset++;
                 else if (player.Direction == "left") x_offset--;
                 else if (player.Direction == "right") x_offset++;
                 // directly in front of player
-                npc npc = map.GetNPCOn(playerX + x_offset, playerY + y_offset);
+                npc = map.GetNPCOn(playerX + x_offset, playerY + y_offset);
                 if (npc != null && npc.NPCVisible)
                 {
-                    actions = npc.actions;
                     npc.FacePlayer(player);
+                    return npc.actions;
                 }
                 else if (map.IsShopCounter(playerX + x_offset, playerY + y_offset))
                 {
@@ -446,11 +531,189 @@ namespace IngameScript
                     npc = map.GetNPCOn(playerX + (x_offset * 2), playerY + (y_offset * 2));
                     if (npc != null && npc.NPCVisible)
                     {
-                        actions = npc.actions;
                         npc.FacePlayer(player);
+                        return npc.actions;
                     }
                 }
-                return actions;
+                return new List<GameAction>();
+            }
+            //-------------------------------------------------------------------
+            // IGameVars
+            //-------------------------------------------------------------------
+            public T GetVarAs<T>(string name, npc me, T defaultValue)
+            {
+                //GridInfo.Echo("GetValueAs: (key) " + name+" (default) "+defaultValue.ToString());
+                string value = GetValue(name, me, true);
+                //GridInfo.Echo("GetValueAs: (value) " + value);
+                if (value == "") return defaultValue;
+                return (T)Convert.ChangeType(value, typeof(T));
+            }
+            public void SetVar<T>(string name, npc npc, T value)
+            {
+                //GridInfo.Echo("SetValueAs: (key) " + name + " (value) " + value.ToString());
+                SetValue(name, npc, value.ToString());
+            }
+            void SetValue(string name, npc me, string value)
+            {
+                //GridInfo.Echo("SetValue: " + name + " = " + value);
+                string objectName = "";
+                if (name.Contains("."))
+                {
+                    string[] parts = name.Split('.');
+                    //GridInfo.Echo("SetValue: parts: " + parts.Length);
+                    objectName = parts[0];
+                    name = parts[1];
+                }
+                // find the object to set the value on
+                if (objectName == "player")
+                {
+                    playerStats[name] = double.Parse(value);
+                }
+                else if (objectName == "playerMax")
+                {
+                    playerMaxStats[name] = int.Parse(value);
+                }
+                else if (objectName == "")
+                {
+                    SetNPCValue(name, me, value);
+                }
+                else if (objectName == "inventory")
+                {
+                    playerInventory[name] = int.Parse(value);
+                }
+                else if (objectName == "bools")
+                {
+                    gameBools[name] = bool.Parse(value);
+                }
+                else if (objectName == "ints")
+                {
+                    gameInts[name] = int.Parse(value);
+                    //GridInfo.Echo("SetValue: ints: " + name + " = " + value + " = " + gameInts[name]);
+                }
+                else if (objectName == "map")
+                {
+                    if (name == "darkRadius") Tilemap.darkRadius = int.Parse(value);
+                }
+                else
+                {
+                    //GridInfo.Echo("SetValue: unknown object: " + objectName);
+                }
+            }
+            void SetNPCValue(string name, npc me, string value)
+            {
+                if (me == null) return;
+                //GridInfo.Echo("SetNPCValue: " + name + " = " + value);  
+                name = name.ToLower();
+                if (name.StartsWith("vis"))
+                {
+                    //GridInfo.Echo("SetNPCValue: visible");
+                    me.NPCVisible = bool.Parse(value);
+                }
+                else if (name.Contains("block"))
+                {
+                    me.BlocksMovement = bool.Parse(value);
+                }
+                else if (name == "x")
+                {
+                    me.X = int.Parse(value);
+                }
+                else if (name == "y")
+                {
+                    me.Y = int.Parse(value);
+                }
+                else if (name.StartsWith("dir"))
+                {
+                    me.SetDirection(value);
+                }
+            }
+            // get a value
+            string GetValue(string name, npc me, bool hasDefault = false)
+            {
+                string objectName = "";
+                if (name.Contains("."))
+                {
+                    string[] parts = name.Split('.');
+                    objectName = parts[0];
+                    name = parts[1];
+                }
+                // find the object to set the value on
+                if (objectName == "player")
+                {
+                    if (name == "x") return playerX.ToString();
+                    else if (name == "y") return playerY.ToString();
+                    if (playerStats.ContainsKey(name)) return playerStats[name].ToString();
+                }
+                else if (objectName == "playerMax" && playerMaxStats.ContainsKey(name))
+                {
+                    return playerMaxStats[name].ToString();
+                }
+                else if (objectName == "")
+                {
+                    return GetNPCValue(name, me);
+                }
+                else if (objectName == "inventory" && playerInventory.ContainsKey(name))
+                {
+                    return playerInventory[name].ToString();
+                }
+                else if (objectName == "bools")
+                {
+                    if (gameBools.ContainsKey(name)) return gameBools[name].ToString();
+                    else if (!hasDefault) return "false";
+                }
+                else if (objectName == "ints")
+                {
+                    if (gameInts.ContainsKey(name))
+                    {
+                        //GridInfo.Echo("GetValue: ints: " + name + " = " + gameInts[name]);
+                        return gameInts[name].ToString();
+                    }
+                    else if (!hasDefault) return "0";
+                }
+                else if (objectName == "map")
+                {
+                    //GridInfo.Echo("GetValue: map: " + name);
+                    if (name == "darkRadius") return Tilemap.darkRadius.ToString();
+                    else if (name == "OnToxicTile") return Tilemap.IsOnToxic.ToString();
+                    else if (name == "ToxicLevel") return Tilemap.PlayerToxicLevel.ToString();
+                    else if (name == "name") return Tilemap.name;
+                }
+                else if (objectName == "enemy")
+                {
+                    if (enemyStats.ContainsKey(name)) return enemyStats[name].ToString();
+                    else return "";
+                }
+                else
+                {
+                    //GridInfo.Echo("GetValue: unknown object: " + objectName + "... or key (" + name + ") wasn't present in dictionary.");
+                }
+                return "";
+            }
+            string GetNPCValue(string name, npc me)
+            {
+                if (me == null) return "";
+                name = name.ToLower();
+                if (name.StartsWith("vis"))
+                {
+                    return me.NPCVisible.ToString();
+                }
+                else if (name.Contains("block"))
+                {
+                    return me.BlocksMovement.ToString();
+                }
+                else if (name == "x")
+                {
+                    return me.X.ToString();
+                }
+                else if (name == "y")
+                {
+                    return me.Y.ToString();
+                }
+                else if (name.StartsWith("dir"))
+                {
+                    return me.Direction;
+                }
+                //GridInfo.Echo("GetNPCValue: unknown property: " + name);
+                return "";
             }
             //-------------------------------------------------------------------
         }

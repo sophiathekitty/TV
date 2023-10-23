@@ -45,10 +45,12 @@ namespace IngameScript
         //----------------------------------------------------------------------
         public class GameAction
         {
+            public static IGameVars GameVars;
+            static Random random = new Random();
             public string Name { get; set; }
             List<string> Commands = new List<string>();
             npc me;
-            public GameAction(string element, npc me)
+            public GameAction(string element, npc me = null)
             {
                 this.me = me;
                 string[] parts = element.Split(';');
@@ -68,94 +70,143 @@ namespace IngameScript
             // run the action
             public bool Run()
             {
+                GridInfo.Echo("GameAction: running " + Name);
                 bool skipping = false;
+                bool ifwastrue = false;
                 foreach (string command in Commands)
                 {
-                    GridInfo.Echo("GameAction: " + command +" (skipping:"+skipping+")");
                     if(command == "") continue;
                     string[] parts = command.Split(':');
                     string cmd = "";
                     string param = "";
-                    cmd = parts[0].ToLower();
+                    cmd = parts[0].ToLower().Trim();
                     if(parts.Length > 1) param = parts[1];
-                    GridInfo.Echo("GameAction: " + cmd + " " + param);
                     // conditional flow commands (that can end skipping)
                     if (cmd == "endif")
                     {
                         skipping = false;
+                        ifwastrue = false;
+                        continue;
                     }
                     else if (cmd == "else")
                     {
+                        GridInfo.Echo("GameAction: else");
                         skipping = !skipping;
+                        if(ifwastrue) skipping = true;
+                        GridInfo.Echo("GameAction: else: " + ifwastrue);
+                        continue;
                     }
                     else if(skipping && cmd == "elseif")
                     {
+                        if (ifwastrue)
+                        {
+                            skipping = true;
+                            continue;
+                        }
+                        GridInfo.Echo("GameAction: elseif: "+param);
                         skipping = !Compare(param);
+                        if (!skipping) ifwastrue = true;
+                        GridInfo.Echo("GameAction: elseif: " + param + " = " + ifwastrue);
+                        continue;
                     }
                     else if(skipping && cmd == "elseifnot")
                     {
+                        if (ifwastrue)
+                        {
+                            skipping = true;
+                            continue;
+                        }
+                        GridInfo.Echo("GameAction: elseifnot: " + param);
                         skipping = Compare(param);
+                        if (!skipping) ifwastrue = true;
+                        GridInfo.Echo("GameAction: elseifnot: " + param + " = " + ifwastrue);
+                        continue;
                     }
+                    //GridInfo.Echo("\n\nGameAction:\n" + cmd + " " + param + "\n(skipping:" + skipping + ")\n");
                     // skip commands until we hit an else or endif (or elseif)
-                    if(skipping) continue;
+                    if (skipping) continue;
                     // conditional flow commands (that can start skipping)
                     if(cmd == "if")
                     {
-                        GridInfo.Echo("GameAction: if(" + param + ")");
+                        //GridInfo.Echo("GameAction: if(" + param + ")");
                         bool res = Compare(param);
                         skipping = !res;
-                        GridInfo.Echo("GameAction: if("+res+") skipping: " + skipping);
+                        //GridInfo.Echo("GameAction: if("+res+") skipping: " + skipping);
+                        if(res) ifwastrue = true;
+                        GridInfo.Echo("GameAction: if: " + param + " = " + ifwastrue);
                     }
                     else if(cmd == "ifnot")
                     {
                         skipping = Compare(param);
+                        if(!skipping) ifwastrue = true;
+                        GridInfo.Echo("GameAction: ifnot: " + param + " = " + ifwastrue);
                     }
                     // math commands
                     else if (cmd == "set")
                     {
                         string[] pair = param.Split('=');
-                        SetValue(pair[0], pair[1]);
+                        //SetValue(pair[0], pair[1]);
+                        GameVars.SetVar(pair[0], me, pair[1]);
                     }
                     else if(cmd == "setto")
                     {
+                        //GridInfo.Echo("GameAction: setto: " + param);
                         string[] pair = param.Split('=');
-                        SetValue(pair[0], GetValue(pair[1], me));
+                        //string value = GetValue(pair[1], me);
+                        string value = GameVars.GetVarAs<string>(pair[1], me);
+                        //GridInfo.Echo("GameAction: setto: " + pair[0] + " = " + value);
+                        GameVars.SetVar(pair[0], me, value);
                     }
                     else if(cmd == "add")
                     {
                         string[] pair = param.Split('=');
-                        float value = GetValueAs<float>(pair[0],me);
+                        float value = GameVars.GetVarAs<float>(pair[0],me);
                         float value2 = 0;
                         if (float.TryParse(pair[1], out value2)) value += value2;
-                        else value += GetValueAs<float>(pair[1], me);
-                        SetValue(pair[0], value.ToString());
+                        else value += GameVars.GetVarAs<float>(pair[1], me);
+                        GameVars.SetVar(pair[0], me, value.ToString());
                     }
                     else if(cmd == "sub")
                     {
+                        //GridInfo.Echo("GameAction: sub: " + param);
                         string[] pair = param.Split('=');
-                        float value = GetValueAs<float>(pair[0], me);
+                        float value = GameVars.GetVarAs<float>(pair[0], me);
                         float value2 = 0;
-                        if (float.TryParse(pair[1], out value2)) value -= value2;
-                        else value -= GetValueAs<float>(pair[1], me);
-                        SetValue(pair[0], value.ToString());
+                        if (!float.TryParse(pair[1], out value2))
+                        {
+                            value2 = GameVars.GetVarAs<float>(pair[1], me);
+                            //GridInfo.Echo("GameAction: sub: getvalueas? " + pair[1] + " = " + value2);
+                        }
+                        //GridInfo.Echo("GameAction: sub: " + pair[0] + " = " + value + " - " + value2);
+                        value -= value2;
+                        GameVars.SetVar(pair[0], me, value.ToString());
+                        //GridInfo.Echo("GameAction: sub: " + pair[0] + " = " + value);
                     }
                     else if(cmd == "mul")
                     {
                         string[] pair = param.Split('=');
-                        float value = GetValueAs<float>(pair[0], me);
+                        float value = GameVars.GetVarAs<float>(pair[0], me);
                         float value2 = 0;
                         if (float.TryParse(pair[1], out value2)) value *= value2;
-                        else value *= GetValueAs<float>(pair[1], me);
-                        SetValue(pair[0], value.ToString());
+                        else value *= GameVars.GetVarAs<float>(pair[1], me);
+                        GameVars.SetVar(pair[0], me, value.ToString());
                     }
                     else if(cmd == "div")
                     {
                         string[] pair = param.Split('=');
-                        float value = GetValueAs<float>(pair[0], me);
+                        float value = GameVars.GetVarAs<float>(pair[0], me);
                         float value2 = 0;
                         if (float.TryParse(pair[1], out value2)) value /= value2;
-                        else value /= GetValueAs<float>(pair[1], me);
-                        SetValue(pair[0], value.ToString());
+                        else value /= GameVars.GetVarAs<float>(pair[1], me);
+                        GameVars.SetVar(pair[0], me, value.ToString());
+                    }
+                    else if(cmd == "rand")
+                    {
+                        string[] pair = param.Split('=');
+                        if (pair.Length != 2) continue;
+                        string[] range = pair[1].Split(',');
+                        if(range.Length != 2) continue;
+                        GameVars.SetVar(pair[0], me, random.Next(int.Parse(range[0]), int.Parse(range[1])).ToString());
                     }
                     // give item
                     else if(cmd == "give")
@@ -165,40 +216,88 @@ namespace IngameScript
                         {
                             string[] pair = param.Split('-');
                             param = pair[0];
-                            count = int.Parse(pair[1]);
+                            int.TryParse(pair[1], out count);
                         }
                         if(GameRPG.playerInventory.ContainsKey(param)) GameRPG.playerInventory[param] += count;
                         else GameRPG.playerInventory.Add(param, count);
+                        GridInfo.Echo("GameAction: give: " + param + " = " + GameRPG.playerInventory[param]);
+                    }
+                    else if(cmd == "take")
+                    {
+                           int count = 1;
+                        if (param.Contains("-"))
+                        {
+                            string[] pair = param.Split('-');
+                            param = pair[0];
+                            int.TryParse(pair[1], out count);
+                        }
+                        if (GameRPG.playerInventory.ContainsKey(param))
+                        {
+                            GameRPG.playerInventory[param] -= count;
+                            if (GameRPG.playerInventory[param] <= 0) GameRPG.playerInventory.Remove(param);
+                        }
+                        GridInfo.Echo("GameAction: take: " + param + " = " + GameRPG.playerInventory[param]);
                     }
                     else if(cmd == "say") 
                     {
                         // say something
-                        GridInfo.Echo("GameAction: say: " + param);
+                        //GridInfo.Echo("GameAction: say: " + param);
                         GameRPG.Say(param);
                         return false;
                     }
                     else if(cmd == "ask")
                     {
-                        GridInfo.Echo("GameAction: ask: " + param);
+                        //GridInfo.Echo("GameAction: ask: " + param);
                         GameRPG.Ask(param,me,Name);
                         return false;
                     }
                     else if(cmd == "go")
                     {
-                        string[] props = param.Split(',');
-                        string map = props[0];
-                        int x = int.Parse(props[1]);
-                        int y = int.Parse(props[2]);
-                        GameRPG.Go(map, x, y);
+                        string map;
+                        int x;
+                        int y;
+                        if (param.Contains(','))
+                        {
+                            string[] props = param.Split(',');
+                            map = props[0];
+                            x = int.Parse(props[1]);
+                            y = int.Parse(props[2]);
+                            GameRPG.Go(map, x, y);
+                        }
+                        else if(param == "map.Exit")
+                        {
+                            TilemapExit exit = Tilemap.Exit;
+                            if (exit == null) continue;
+                            map = exit.Map;
+                            x = exit.X;
+                            y = exit.Y;
+                            GameRPG.Go(map, x, y);
+                        }
                     }
                     else if(cmd == "savegame")
                     {
                         // save the game
-                        GridInfo.Echo("GameAction: savegame");
+                        //GridInfo.Echo("GameAction: savegame");
+                    }
+                    else if(cmd == "run")
+                    {
+                        GridInfo.Echo("GameAction: run: " + param);
+                        if(GameRPG.gameLogic.ContainsKey(param))
+                        {
+                            GameRPG.gameLogic[param].Run();
+                        }
+                        else
+                        {
+                            //GridInfo.Echo("GameAction: run: unknown action: " + param);
+                        }
+                    }
+                    else if(cmd == "exit")
+                    {
+                        return true;
                     }
                     else
                     {
-                        GridInfo.Echo("GameAction: unknown command: " + cmd);
+                        //GridInfo.Echo("GameAction: unknown command: " + cmd);
                     }
                 }
                 return true;
@@ -212,31 +311,51 @@ namespace IngameScript
                 if (param.Contains("<")) opperator = '<';
                 else if (param.Contains(">")) opperator = '>';
                 string[] pair = param.Split(opperator);
-                string value = GetValue(pair[0], me);
+                string value = GameVars.GetVarAs<string>(pair[0], me);
                 float fvalue;
+                bool bvalue;
                 bool isFloat = float.TryParse(value, out fvalue);
-                if (isFloat)
+                bool isBool = bool.TryParse(value, out bvalue);
+                if (isBool)
                 {
-                    float fparam = float.Parse(pair[1]);
+                    bool bparam;
+                    if (!bool.TryParse(pair[1], out bparam))
+                    {
+                        bparam = GameVars.GetVarAs<bool>(pair[1], me);
+                    }
+                    GridInfo.Echo("GameAction:bool: Compare: " + bvalue + " " + opperator + " " + bparam);
+                    return bvalue == bparam;
+                }
+                else if(isFloat)
+                {
+                    float fparam;
+                    if (!float.TryParse(pair[1], out fparam))
+                    {
+                        fparam = GameVars.GetVarAs<float>(pair[1], me);
+                    }
+                    GridInfo.Echo("GameAction:float: Compare: " + fvalue + " " + opperator + " " + fparam);
                     if (opperator == '=' && fvalue == fparam) result = true;
                     else if (opperator == '<' && fvalue < fparam) result = true;
                     else if (opperator == '>' && fvalue > fparam) result = true;
                 }
                 else
                 {
+                    GridInfo.Echo("GameAction:string: Compare: " + value + " " + opperator + " " + pair[1]);
+                    // string comparison
                     if (opperator == '=' && value == pair[1]) result = true;
                 }
                 return result;
             }
+            /*
             // set a value
             void SetValue(string name, string value)
             {
-                GridInfo.Echo("SetValue: " + name + " = " + value);
+                //GridInfo.Echo("SetValue: " + name + " = " + value);
                 string objectName = "";
                 if (name.Contains("."))
                 {
                     string[] parts = name.Split('.');
-                    GridInfo.Echo("SetValue: parts: " + parts.Length);
+                    //GridInfo.Echo("SetValue: parts: " + parts.Length);
                     objectName = parts[0];
                     name = parts[1];
                 }
@@ -264,18 +383,24 @@ namespace IngameScript
                 else if(objectName == "ints")
                 {
                     GameRPG.gameInts[name] = int.Parse(value);
+                    //GridInfo.Echo("SetValue: ints: " + name + " = " + value + " = " + GameRPG.gameInts[name]);
+                }
+                else if(objectName == "map")
+                {
+                    if (name == "darkRadius") Tilemap.darkRadius = int.Parse(value);
                 }
                 else
                 {
-                    GridInfo.Echo("SetValue: unknown object: " + objectName);
+                    //GridInfo.Echo("SetValue: unknown object: " + objectName);
                 }   
             }
             void SetNPCValue(string name, string value)
             {
-                GridInfo.Echo("SetNPCValue: " + name + " = " + value);  
+                if(me == null) return;
+                //GridInfo.Echo("SetNPCValue: " + name + " = " + value);  
                 name = name.ToLower();
                 if(name.StartsWith("vis")) {
-                    GridInfo.Echo("SetNPCValue: visible");
+                    //GridInfo.Echo("SetNPCValue: visible");
                     me.NPCVisible = bool.Parse(value);
                 }
                 else if(name.Contains("block"))
@@ -306,9 +431,11 @@ namespace IngameScript
                     name = parts[1];
                 }
                 // find the object to set the value on
-                if (objectName == "player" && GameRPG.playerStats.ContainsKey(name))
+                if (objectName == "player")
                 {
-                    return GameRPG.playerStats[name].ToString();
+                    if(name == "x") return GameRPG.playerX.ToString();
+                    else if(name == "y") return GameRPG.playerY.ToString();
+                    if(GameRPG.playerStats.ContainsKey(name)) return GameRPG.playerStats[name].ToString();
                 }
                 else if(objectName == "playerMax" && GameRPG.playerMaxStats.ContainsKey(name))
                 {
@@ -327,18 +454,37 @@ namespace IngameScript
                     if (GameRPG.gameBools.ContainsKey(name)) return GameRPG.gameBools[name].ToString();
                     else if(!hasDefault) return "false";
                 }
-                else if (objectName == "ints" && GameRPG.gameBools.ContainsKey(name))
+                else if (objectName == "ints")
                 {
-                    return GameRPG.gameInts[name].ToString();
+                    if (GameRPG.gameInts.ContainsKey(name))
+                    {
+                        //GridInfo.Echo("GetValue: ints: " + name + " = " + GameRPG.gameInts[name]);
+                        return GameRPG.gameInts[name].ToString();
+                    }
+                    else if (!hasDefault) return "0";
+                }
+                else if(objectName == "map")
+                {
+                    //GridInfo.Echo("GetValue: map: " + name);
+                    if (name == "darkRadius") return Tilemap.darkRadius.ToString();
+                    else if (name == "OnToxicTile") return Tilemap.IsOnToxic.ToString();
+                    else if (name == "ToxicLevel") return Tilemap.PlayerToxicLevel.ToString();
+                    else if (name == "name") return Tilemap.name;
+                }
+                else if(objectName == "enemy")
+                {
+                    if (GameRPG.enemyStats.ContainsKey(name)) return GameRPG.enemyStats[name].ToString();
+                    else return "";
                 }
                 else
                 {
-                    GridInfo.Echo("GetValue: unknown object: " + objectName + "... or key wasn't present in dictionary.");
+                    //GridInfo.Echo("GetValue: unknown object: " + objectName + "... or key ("+name+") wasn't present in dictionary.");
                 }
                 return "";
             }
             static string GetNPCValue(string name, npc me)
             {
+                if (me == null) return "";
                 name = name.ToLower();
                 if (name.StartsWith("vis"))
                 {
@@ -360,17 +506,18 @@ namespace IngameScript
                 {
                     return me.Direction;
                 }
-                GridInfo.Echo("GetNPCValue: unknown property: " + name);
+                //GridInfo.Echo("GetNPCValue: unknown property: " + name);
                 return "";
             }
             public static T GetValueAs<T>(string name, npc me, T defaultValue = default(T))
             {
-                GridInfo.Echo("GetValueAs: (key) " + name+" (default) "+defaultValue.ToString());
+                //GridInfo.Echo("GetValueAs: (key) " + name+" (default) "+defaultValue.ToString());
                 string value = GetValue(name, me,true);
-                GridInfo.Echo("GetValueAs: (value) " + value);
+                //GridInfo.Echo("GetValueAs: (value) " + value);
                 if (value == "") return defaultValue;
                 return (T)Convert.ChangeType(value, typeof(T));
             }
+            */
         }
         //----------------------------------------------------------------------
     }

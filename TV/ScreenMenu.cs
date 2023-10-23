@@ -29,13 +29,14 @@ namespace IngameScript
         {
             ScreenSprite back;
             ScreenSprite title;
-            List<ScreenMenuItem> menuItems = new List<ScreenMenuItem>();
+            public List<ScreenMenuItem> menuItems = new List<ScreenMenuItem>();
             int selectedIndex = 0;
             public float ItemHeight = 30f;
             public float ItemIndent = 20f;
             float _width = 100f;
             float headerHeight = 1.2f;
             ScreenActionBar actionBar;
+            public bool handleEditing = true;
             public string menuScrollActions
             {
                 get
@@ -141,6 +142,11 @@ namespace IngameScript
             {
                 menuItems.Add(new ScreenMenuItem(label, _width));
             }
+            public void AddLabel(string label, string defaultValue)
+            {
+                GridInfo.Echo("AddLabel: " + label + ": " + defaultValue);
+                menuItems.Add(new ScreenMenuItem(label, _width, defaultValue));
+            }
             //
             // add variable to the menu
             //
@@ -230,7 +236,7 @@ namespace IngameScript
                         }
                         else if (action == "select")
                         {
-                            if (SelectedItem.IsAction)
+                            if (SelectedItem.IsAction || !handleEditing)
                             {
                                 return (SelectedItem.Label.ToLower());
                             }

@@ -62,13 +62,18 @@ namespace IngameScript
                 text = new ScreenSprite(ScreenSprite.ScreenSpriteAnchor.BottomCenter, new Vector2(-width/2,-bottomMargin-(height)),1,size,Color.White,"Monospace","0123456789abcdefghijklmno\npqrstuvwxyz",TextAlignment.LEFT,SpriteType.TEXT);
                 ShowTextBlock();
             }
+            public void Append(string text)
+            {
+                dialogText += "\n\n" + text;
+                ShowTextBlock();
+            }
             void ShowTextBlock()
             {
-                GridInfo.Echo("ShowTextBlock: "+ dialogText);
+                //GridInfo.Echo("ShowTextBlock: "+ dialogText);
                 List<string> words = dialogText.Split(' ').ToList<string>();
                 string textBlock = "";
                 bool firstLine = true;
-                GridInfo.Echo("words: "+ words.Count);
+                //GridInfo.Echo("words: "+ words.Count);
                 int lineCount = 0;
                 while(words.Count > 0 && lineCount < maxLines)
                 {
@@ -77,13 +82,13 @@ namespace IngameScript
                     else textBlock += "\n";
                     string line = "";
                     bool firstWord = true;
-                    GridInfo.Echo("building lines: "+textBlock);
+                    //GridInfo.Echo("building lines: "+textBlock);
                     while(words.Count > 0 && line.Length +words[0].Length < maxlineChars)
                     {
-                        GridInfo.Echo("word: " + words[0]);
+                        //GridInfo.Echo("word: " + words[0]);
                         if(firstWord) firstWord = false;
                         else line += " ";
-                        GridInfo.Echo("adding word: " + line);
+                        //GridInfo.Echo("adding word: " + line);
                         line += words[0];
                         words.RemoveAt(0);
                     }
@@ -106,10 +111,10 @@ namespace IngameScript
             public string HandleInput(string input)
             {
                 string action = actionBar.HandleInput(input);
-                GridInfo.Echo("dialog action: "+action);
+                //GridInfo.Echo("dialog action: "+action);
                 if (action == "next")
                 {
-                    GridInfo.Echo("dialog text: "+dialogText);
+                    //GridInfo.Echo("dialog text: "+dialogText);
                     // show more text
                     if(dialogText != "") ShowTextBlock();
                     // close dialog

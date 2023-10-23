@@ -55,7 +55,7 @@ namespace IngameScript
             bool randomWalk = false;
             public bool BlocksMovement = true;
             int walkTimer = 0;
-            static int walkTime = 3;
+            static int walkTime = 90;
             bool visible = true;
             public bool NPCVisible
             {
@@ -83,7 +83,7 @@ namespace IngameScript
             // constructor
             public npc(string character, string[] parts) : base(AnimatedCharacter.CharacterLibrary[character])
             {
-                GridInfo.Echo("npc: constructor: " + character);
+                //GridInfo.Echo("npc: constructor: " + character);
                 foreach (string part in parts)
                 {
                     if (part.Contains("type:npc"))
@@ -96,34 +96,36 @@ namespace IngameScript
                             else if (pair[0] == "y") Y = int.Parse(pair[1]);
                             else if (pair[0] == "walk") randomWalk = bool.Parse(pair[1]);
                             else if (pair[0] == "direction") SetDirection(pair[1]);
+                            else if (pair[0] == "blocks") BlocksMovement = bool.Parse(pair[1]);
+                            else if (pair[0] == "visible") NPCVisible = bool.Parse(pair[1]);
                         }
                     }
                     else if (part.Contains("action:"))
                     {
-                        GridInfo.Echo("npc: constructor: action:");
+                        //GridInfo.Echo("npc: constructor: action:");
                         actions.Add(new GameAction(part,this));
                     }
                     else if(part.Contains("yes:"))
                     {
                         GameAction y = new GameAction(part, this);
                         yes.Add(y.Name, y);
-                        GridInfo.Echo("npc: constructor: yes:"+y.Name);
+                        //GridInfo.Echo("npc: constructor: yes:"+y.Name);
                     }
                     else if (part.Contains("no:"))
                     {
                         GameAction n = new GameAction(part, this);
                         no.Add(n.Name, n);
-                        GridInfo.Echo("npc: constructor: no:"+n.Name);
+                        //GridInfo.Echo("npc: constructor: no:"+n.Name);
                     }
                     // else it's setting a properety
                     else if (part.StartsWith("visible"))
                     {
-                        GridInfo.Echo("npc: constructor: visible: "+part);
+                        //GridInfo.Echo("npc: constructor: visible: "+part);
                         string[] pair = part.Split(':');
-                        if(pair.Length > 2) Visible = GameAction.GetValueAs<bool>(pair[1], this, bool.Parse(pair[2]));
-                        else Visible = GameAction.GetValueAs<bool>(pair[1],this);
+                        if(pair.Length > 2) Visible = GameAction.GameVars.GetVarAs<bool>(pair[1], this, bool.Parse(pair[2]));
+                        else Visible = GameAction.GameVars.GetVarAs<bool>(pair[1],this);
                         NPCVisible = Visible;
-                        GridInfo.Echo("npc: constructor: visible: "+Visible);
+                        //GridInfo.Echo("npc: constructor: visible: "+Visible);
                     }
                 }
                 SetDirection("down");

@@ -33,7 +33,7 @@ namespace IngameScript
             public static int frameRate = 5;
             public static void LoadCharacters(string data)
             {
-                GridInfo.Echo("Loading characters: "+data.Length);
+                //GridInfo.Echo("Loading characters: "+data.Length);
                 string[] parts = data.Split('║');
                 foreach(string part in parts)
                 {
