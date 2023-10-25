@@ -202,7 +202,7 @@ namespace IngameScript
                 bullet = new ScreenSprite(ScreenSprite.ScreenSpriteAnchor.CenterLeft, _postion, ScreenSprite.DEFAULT_FONT_SIZE, new Vector2(0, 0), Color, "White", bulletIcon, TextAlignment.RIGHT, SpriteType.TEXT);
                 this.label = new ScreenSprite(ScreenSprite.ScreenSpriteAnchor.CenterLeft, _postion, ScreenSprite.DEFAULT_FONT_SIZE, new Vector2(1, 0), Color, "White", label, TextAlignment.LEFT, SpriteType.TEXT);
                 _postion += new Vector2(width, 0);
-                text = new ScreenSprite(ScreenSprite.ScreenSpriteAnchor.CenterLeft, _postion, ScreenSprite.DEFAULT_FONT_SIZE, new Vector2(0, 0), Color, "White", defaultValue, TextAlignment.LEFT, SpriteType.TEXT);
+                text = new ScreenSprite(ScreenSprite.ScreenSpriteAnchor.CenterLeft, _postion, ScreenSprite.DEFAULT_FONT_SIZE, new Vector2(0, 0), Color, "White", defaultValue, TextAlignment.RIGHT, SpriteType.TEXT);
             }
             public ScreenMenuItem(string label, float width)
             {

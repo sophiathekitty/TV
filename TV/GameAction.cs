@@ -251,6 +251,18 @@ namespace IngameScript
                         GameRPG.Ask(param,me,Name);
                         return false;
                     }
+                    else if(cmd == "shop")
+                    {
+                        GridInfo.Echo("GameAction: shop: " + param);
+                        GameRPG.Shop(param);
+                        return false;
+                    }
+                    else if(cmd == "sell")
+                    {
+                        GridInfo.Echo("GameAction: sell: ");
+                        GameRPG.Sell();
+                        return false;
+                    }
                     else if(cmd == "go")
                     {
                         string map;
@@ -288,7 +300,7 @@ namespace IngameScript
                         }
                         else
                         {
-                            //GridInfo.Echo("GameAction: run: unknown action: " + param);
+                            GridInfo.Echo("GameAction: run: unknown action: " + param);
                         }
                     }
                     else if(cmd == "exit")
@@ -297,7 +309,7 @@ namespace IngameScript
                     }
                     else
                     {
-                        //GridInfo.Echo("GameAction: unknown command: " + cmd);
+                        GridInfo.Echo("GameAction: unknown command: " + cmd);
                     }
                 }
                 return true;
@@ -346,178 +358,6 @@ namespace IngameScript
                 }
                 return result;
             }
-            /*
-            // set a value
-            void SetValue(string name, string value)
-            {
-                //GridInfo.Echo("SetValue: " + name + " = " + value);
-                string objectName = "";
-                if (name.Contains("."))
-                {
-                    string[] parts = name.Split('.');
-                    //GridInfo.Echo("SetValue: parts: " + parts.Length);
-                    objectName = parts[0];
-                    name = parts[1];
-                }
-                // find the object to set the value on
-                if (objectName == "player")
-                {
-                    GameRPG.playerStats[name] = double.Parse(value);
-                }
-                else if(objectName == "playerMax")
-                {
-                    GameRPG.playerMaxStats[name] = int.Parse(value);
-                }
-                else if(objectName == "")
-                {
-                    SetNPCValue(name, value);
-                }
-                else if(objectName == "inventory")
-                {
-                    GameRPG.playerInventory[name] = int.Parse(value);
-                }
-                else if(objectName == "bools")
-                {
-                    GameRPG.gameBools[name] = bool.Parse(value);
-                }
-                else if(objectName == "ints")
-                {
-                    GameRPG.gameInts[name] = int.Parse(value);
-                    //GridInfo.Echo("SetValue: ints: " + name + " = " + value + " = " + GameRPG.gameInts[name]);
-                }
-                else if(objectName == "map")
-                {
-                    if (name == "darkRadius") Tilemap.darkRadius = int.Parse(value);
-                }
-                else
-                {
-                    //GridInfo.Echo("SetValue: unknown object: " + objectName);
-                }   
-            }
-            void SetNPCValue(string name, string value)
-            {
-                if(me == null) return;
-                //GridInfo.Echo("SetNPCValue: " + name + " = " + value);  
-                name = name.ToLower();
-                if(name.StartsWith("vis")) {
-                    //GridInfo.Echo("SetNPCValue: visible");
-                    me.NPCVisible = bool.Parse(value);
-                }
-                else if(name.Contains("block"))
-                {
-                    me.BlocksMovement = bool.Parse(value);
-                }
-                else if(name == "x")
-                {
-                    me.X = int.Parse(value);
-                }
-                else if(name == "y")
-                {
-                    me.Y = int.Parse(value);
-                }
-                else if(name.StartsWith("dir"))
-                {
-                    me.SetDirection(value);
-                }
-            }
-            // get a value
-            public static string GetValue(string name, npc me, bool hasDefault = false)
-            {
-                string objectName = "";
-                if (name.Contains("."))
-                {
-                    string[] parts = name.Split('.');
-                    objectName = parts[0];
-                    name = parts[1];
-                }
-                // find the object to set the value on
-                if (objectName == "player")
-                {
-                    if(name == "x") return GameRPG.playerX.ToString();
-                    else if(name == "y") return GameRPG.playerY.ToString();
-                    if(GameRPG.playerStats.ContainsKey(name)) return GameRPG.playerStats[name].ToString();
-                }
-                else if(objectName == "playerMax" && GameRPG.playerMaxStats.ContainsKey(name))
-                {
-                    return GameRPG.playerMaxStats[name].ToString();
-                }
-                else if (objectName == "")
-                {
-                    return GetNPCValue(name, me);
-                }
-                else if (objectName == "inventory" && GameRPG.playerInventory.ContainsKey(name))
-                {
-                    return GameRPG.playerInventory[name].ToString();
-                }
-                else if (objectName == "bools")
-                {
-                    if (GameRPG.gameBools.ContainsKey(name)) return GameRPG.gameBools[name].ToString();
-                    else if(!hasDefault) return "false";
-                }
-                else if (objectName == "ints")
-                {
-                    if (GameRPG.gameInts.ContainsKey(name))
-                    {
-                        //GridInfo.Echo("GetValue: ints: " + name + " = " + GameRPG.gameInts[name]);
-                        return GameRPG.gameInts[name].ToString();
-                    }
-                    else if (!hasDefault) return "0";
-                }
-                else if(objectName == "map")
-                {
-                    //GridInfo.Echo("GetValue: map: " + name);
-                    if (name == "darkRadius") return Tilemap.darkRadius.ToString();
-                    else if (name == "OnToxicTile") return Tilemap.IsOnToxic.ToString();
-                    else if (name == "ToxicLevel") return Tilemap.PlayerToxicLevel.ToString();
-                    else if (name == "name") return Tilemap.name;
-                }
-                else if(objectName == "enemy")
-                {
-                    if (GameRPG.enemyStats.ContainsKey(name)) return GameRPG.enemyStats[name].ToString();
-                    else return "";
-                }
-                else
-                {
-                    //GridInfo.Echo("GetValue: unknown object: " + objectName + "... or key ("+name+") wasn't present in dictionary.");
-                }
-                return "";
-            }
-            static string GetNPCValue(string name, npc me)
-            {
-                if (me == null) return "";
-                name = name.ToLower();
-                if (name.StartsWith("vis"))
-                {
-                    return me.NPCVisible.ToString();
-                }
-                else if (name.Contains("block"))
-                {
-                    return me.BlocksMovement.ToString();
-                }
-                else if (name == "x")
-                {
-                    return me.X.ToString();
-                }
-                else if (name == "y")
-                {
-                    return me.Y.ToString();
-                }
-                else if (name.StartsWith("dir"))
-                {
-                    return me.Direction;
-                }
-                //GridInfo.Echo("GetNPCValue: unknown property: " + name);
-                return "";
-            }
-            public static T GetValueAs<T>(string name, npc me, T defaultValue = default(T))
-            {
-                //GridInfo.Echo("GetValueAs: (key) " + name+" (default) "+defaultValue.ToString());
-                string value = GetValue(name, me,true);
-                //GridInfo.Echo("GetValueAs: (value) " + value);
-                if (value == "") return defaultValue;
-                return (T)Convert.ChangeType(value, typeof(T));
-            }
-            */
         }
         //----------------------------------------------------------------------
     }

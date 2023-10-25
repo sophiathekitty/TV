@@ -29,6 +29,8 @@ namespace IngameScript
         public class GameRPG : IGameVars
         {
             public static Action<string> Say;
+            public static Action<string> Shop;
+            public static Action Sell;
             public static Action<string,int,int> Go;
             public static Action<string,npc,string> Ask;
             npc promptNPC = null;
@@ -58,9 +60,11 @@ namespace IngameScript
             ScreenActionBar actionBar;
             GameActionMenu gameActionMenu;
             GameItemMenu gameItemMenu;
+            ShopMenu shopMenu;
             PlayerStatsWindow playerStatsWindow;
             DialogWindow dialogWindow;
             string controls = "< v ^ > Menu";
+            string NothingToSell = "You have nothing to sell.";
             // get a subset of the item library
             Dictionary<string, Dictionary<string, string>> ItemsOfType(string type)
             {
@@ -106,6 +110,8 @@ namespace IngameScript
                 Say = ShowDialog;
                 Ask = ShowDialogPrompt;
                 Go = LoadMap;
+                Shop = ShowShop;
+                Sell = SellItems;
                 GameAction.GameVars = this;
             }
             // parse game info
@@ -318,6 +324,43 @@ namespace IngameScript
                 player.Position = map.GridPosToScreenPos(playerX, playerY);
                 //GridInfo.Echo("game: update: player moved... update finished");
             }
+            //-------------------------------------------------------------------
+            void ShowShop(string itemlist)
+            {
+                GridInfo.Echo("ShowShop: " + itemlist);
+                List<ShopItem> shop_items = new List<ShopItem>();
+                string[] items = itemlist.Split(',');
+                foreach(string item in items)
+                {
+                    if(itemStats.ContainsKey(item)) shop_items.Add(new ShopItem(itemStats[item]));
+                }
+                GridInfo.Echo("ShowShop: " + shop_items.Count);
+                shopMenu = new ShopMenu("Buy", 420, actionBar, shop_items);
+                shopMenu.playerSelling = false;
+                shopMenu.AddToScreen(tv);
+                gameActionMenu.Visible = false;
+            }
+            void SellItems()
+            {
+                GridInfo.Echo("SellItems");
+                List<ShopItem> shop_items = new List<ShopItem>();
+                foreach(var item in playerInventory)
+                {
+                    GridInfo.Echo("item: " + item.Key + " = " + item.Value);
+                    if (!itemStats.ContainsKey(item.Key) || !itemStats[item.Key].ContainsKey("cost")) continue;
+                    shop_items.Add(new ShopItem(itemStats[item.Key]));
+                }
+                GridInfo.Echo("SellItems: " + shop_items.Count);
+                if (shop_items.Count == 0)
+                {
+                    ShowDialog(NothingToSell);
+                    return;
+                }
+                shopMenu = new ShopMenu("Sell", 420, actionBar, shop_items);
+                shopMenu.playerSelling = true;
+                shopMenu.AddToScreen(tv);
+                gameActionMenu.Visible = false;
+            }
             void ShowDialog(string dialog)
             {
                 if(dialogWindow == null) 
@@ -358,6 +401,7 @@ namespace IngameScript
                 if(playerStatsWindow != null) playerStatsWindow.Update(playerStats);
                 string action = "";
                 if (dialogWindow != null) action = dialogWindow.HandleInput(input);
+                else if (shopMenu != null) action = shopMenu.HandleInput(input);
                 else if (gameItemMenu != null) action = gameItemMenu.HandleInput(input);
                 else if (gameActionMenu == null) action = actionBar.HandleInput(input);
                 else action = gameActionMenu.HandleInput(input);
@@ -395,13 +439,30 @@ namespace IngameScript
                 else if(action == "back")
                 {
                     if (gameItemMenu != null) HideItemsMenu();
+                    else if (shopMenu != null) HideShopMenu();
                     else CloseMenu();
                     return "";
                 }
                 else if(action == "close")
                 {
-                    CloseDialog();
-                    if(gameActionMenu == null) actionBar.SetActions(controls);
+                    if (shopMenu != null)
+                    {
+                        actionBar.SetActions(shopMenu.menuScrollActions);
+                        if (dialogWindow != null)
+                        {
+                            dialogWindow.RemoveFromScreen(tv);
+                            dialogWindow = null;
+                        }
+                        if(playerStatsWindow != null)
+                        {
+                            playerStatsWindow.Update(playerStats);
+                        }
+                    }
+                    else
+                    {
+                        CloseDialog();
+                    }
+                    if (gameActionMenu == null) actionBar.SetActions(controls);
                 }
                 else if(promptNPC != null && action == "yes")
                 {
@@ -466,6 +527,13 @@ namespace IngameScript
                 if (gameItemMenu == null) return;
                 gameItemMenu.RemoveFromScreen(tv);
                 gameItemMenu = null;
+            }
+            void HideShopMenu()
+            {
+                if(gameActionMenu != null) gameActionMenu.Visible = true;
+                if (shopMenu == null) return;
+                shopMenu.RemoveFromScreen(tv);
+                shopMenu = null;
             }
             // dialog window closed
             void CloseDialog()

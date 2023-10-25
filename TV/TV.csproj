@@ -77,6 +77,7 @@
     <Compile Include="ScreenMenu.cs" />
     <Compile Include="ScreenMenuItem.cs" />
     <Compile Include="ScreenScene.cs" />
+    <Compile Include="ShopMenu.cs" />
     <Compile Include="ShowHandler.cs" />
     <Compile Include="SpriteOptions.cs" />
     <Compile Include="Subtitles.cs" />

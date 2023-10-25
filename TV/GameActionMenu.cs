@@ -28,12 +28,12 @@ namespace IngameScript
             public GameActionMenu(string title, float width, ScreenActionBar actionBar, List<GameAction> actions) : base(title, width, actionBar)
             {
                 SetBackgroundColor(Color.Black);
-                AddLabel("Items");
                 this.actions = actions;
                 foreach(GameAction action in actions)
                 {
                     AddLabel(action.Name);
                 }
+                AddLabel("Items");
                 AddLabel("Quit Game");
             }
             // override input handling
