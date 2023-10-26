@@ -46,6 +46,9 @@ namespace IngameScript
         public class GameAction
         {
             public static IGameVars GameVars;
+            public static IGameShop GameShop;
+            public static IGameDialog Game;
+            public static IGameInventory GameInventory;
             static Random random = new Random();
             public string Name { get; set; }
             List<string> Commands = new List<string>();
@@ -122,7 +125,7 @@ namespace IngameScript
                         GridInfo.Echo("GameAction: elseifnot: " + param + " = " + ifwastrue);
                         continue;
                     }
-                    //GridInfo.Echo("\n\nGameAction:\n" + cmd + " " + param + "\n(skipping:" + skipping + ")\n");
+                    GridInfo.Echo("\n\nGameAction:\n" + cmd + " " + param + "\n(skipping:" + skipping + ")\n");
                     // skip commands until we hit an else or endif (or elseif)
                     if (skipping) continue;
                     // conditional flow commands (that can start skipping)
@@ -193,11 +196,15 @@ namespace IngameScript
                     }
                     else if(cmd == "div")
                     {
+                        GridInfo.Echo("GameAction: div: " + param);
                         string[] pair = param.Split('=');
-                        float value = GameVars.GetVarAs<float>(pair[0], me);
-                        float value2 = 0;
-                        if (float.TryParse(pair[1], out value2)) value /= value2;
-                        else value /= GameVars.GetVarAs<float>(pair[1], me);
+                        double value = GameVars.GetVarAs<double>(pair[0], me);
+                        GridInfo.Echo("GameAction: div: " + pair[0] + " = " + value);
+                        double value2 = 1;
+                        if (!double.TryParse(pair[1], out value2)) value2 = GameVars.GetVarAs<double>(pair[1], me);
+                        GridInfo.Echo("GameAction: div: " + pair[1] + " = " + value2);
+                        value = Math.Round(value / value2);
+                        GridInfo.Echo("GameAction: div: " + pair[0] + " = " + value);
                         GameVars.SetVar(pair[0], me, value.ToString());
                     }
                     else if(cmd == "rand")
@@ -218,9 +225,12 @@ namespace IngameScript
                             param = pair[0];
                             int.TryParse(pair[1], out count);
                         }
+                        /*
                         if(GameRPG.playerInventory.ContainsKey(param)) GameRPG.playerInventory[param] += count;
                         else GameRPG.playerInventory.Add(param, count);
                         GridInfo.Echo("GameAction: give: " + param + " = " + GameRPG.playerInventory[param]);
+                        */
+                        GameInventory.AddItem(param);
                     }
                     else if(cmd == "take")
                     {
@@ -231,36 +241,39 @@ namespace IngameScript
                             param = pair[0];
                             int.TryParse(pair[1], out count);
                         }
+                        /*
                         if (GameRPG.playerInventory.ContainsKey(param))
                         {
                             GameRPG.playerInventory[param] -= count;
                             if (GameRPG.playerInventory[param] <= 0) GameRPG.playerInventory.Remove(param);
                         }
                         GridInfo.Echo("GameAction: take: " + param + " = " + GameRPG.playerInventory[param]);
+                        */
+                        GameInventory.RemoveItem(param);
                     }
                     else if(cmd == "say") 
                     {
                         // say something
                         //GridInfo.Echo("GameAction: say: " + param);
-                        GameRPG.Say(param);
+                        Game.Say(param);
                         return false;
                     }
                     else if(cmd == "ask")
                     {
                         //GridInfo.Echo("GameAction: ask: " + param);
-                        GameRPG.Ask(param,me,Name);
+                        Game.Ask(param,me,Name);
                         return false;
                     }
                     else if(cmd == "shop")
                     {
                         GridInfo.Echo("GameAction: shop: " + param);
-                        GameRPG.Shop(param);
+                        GameShop.Shop(param);
                         return false;
                     }
                     else if(cmd == "sell")
                     {
                         GridInfo.Echo("GameAction: sell: ");
-                        GameRPG.Sell();
+                        GameShop.Sell();
                         return false;
                     }
                     else if(cmd == "go")
@@ -274,7 +287,7 @@ namespace IngameScript
                             map = props[0];
                             x = int.Parse(props[1]);
                             y = int.Parse(props[2]);
-                            GameRPG.Go(map, x, y);
+                            Game.Go(map, x, y);
                         }
                         else if(param == "map.Exit")
                         {
@@ -283,7 +296,7 @@ namespace IngameScript
                             map = exit.Map;
                             x = exit.X;
                             y = exit.Y;
-                            GameRPG.Go(map, x, y);
+                            Game.Go(map, x, y);
                         }
                     }
                     else if(cmd == "savegame")
@@ -294,6 +307,8 @@ namespace IngameScript
                     else if(cmd == "run")
                     {
                         GridInfo.Echo("GameAction: run: " + param);
+                        Game.Run(param);
+                        /*
                         if(GameRPG.gameLogic.ContainsKey(param))
                         {
                             GameRPG.gameLogic[param].Run();
@@ -302,6 +317,7 @@ namespace IngameScript
                         {
                             GridInfo.Echo("GameAction: run: unknown action: " + param);
                         }
+                        */
                     }
                     else if(cmd == "exit")
                     {

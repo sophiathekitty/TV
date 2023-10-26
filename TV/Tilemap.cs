@@ -122,7 +122,7 @@ namespace IngameScript
             }
             bool playerOnRoof
             {
-                get { return (roofMap[GameRPG.playerY][GameRPG.playerX] == '1'); }
+                get { return (roofMap[GameAction.Game.GetPlayerY()][GameAction.Game.GetPlayerX()] == '1'); }
             }
             // get roof for a position
             public char GetRoof(int x, int y)
@@ -165,15 +165,15 @@ namespace IngameScript
             {
                 get
                 {
-                    //GridInfo.Echo("IsOnToxic: " + GameRPG.playerX + "," + GameRPG.playerY);
-                    return IsToxic(GameRPG.playerX, GameRPG.playerY);
+                    //GridInfo.Echo("IsOnToxic: " + GameAction.Game.GetPlayerX() + "," + GameAction.Game.GetPlayerY());
+                    return IsToxic(GameAction.Game.GetPlayerX(), GameAction.Game.GetPlayerY());
                 }
             }
             public static int PlayerToxicLevel
             {
                 get
                 {
-                    return ToxicLevel(GameRPG.playerX, GameRPG.playerY);
+                    return ToxicLevel(GameAction.Game.GetPlayerX(), GameAction.Game.GetPlayerY());
                 }
             }
             // is this tile dangerous?
@@ -184,7 +184,7 @@ namespace IngameScript
             }
             public bool IsOccupied(int x, int y)
             {
-                if(x == GameRPG.playerX && y == GameRPG.playerY) return true;
+                if(x == GameAction.Game.GetPlayerX() && y == GameAction.Game.GetPlayerY()) return true;
                 foreach(npc npc in npcs)
                 {
                     if (npc.BlocksMovement && npc.X == x && npc.Y == y && npc.NPCVisible) return true;
@@ -362,7 +362,7 @@ namespace IngameScript
                         if (dark)
                         {
                             // if the x and y are within the radius of the player, set overlay to "" else set it to the dark tile
-                            if(GameRPG.playerX + darkRadius > x + viewPortX && GameRPG.playerX - darkRadius < x + viewPortX && GameRPG.playerY + darkRadius > y + viewPortY && GameRPG.playerY - darkRadius < y + viewPortY)
+                            if(GameAction.Game.GetPlayerX() + darkRadius > x + viewPortX && GameAction.Game.GetPlayerX() - darkRadius < x + viewPortX && GameAction.Game.GetPlayerY() + darkRadius > y + viewPortY && GameAction.Game.GetPlayerY() - darkRadius < y + viewPortY)
                             {
                                 if(overlayTiles.Count > i) overlayTiles[i].Data = "";
                             }

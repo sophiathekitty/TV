@@ -46,7 +46,7 @@ namespace IngameScript
                     if (inventory.ContainsKey(item.Name)) item.count = inventory[item.Name];
                     if (menuItems.Count > i && menuItems[i].Label == item.Name)
                     {
-                        if (GameRPG.playerGear.ContainsValue(item.Name)) menuItems[i].Data = "E";
+                        if (GameAction.GameInventory.HasEquipped(item.Name)) menuItems[i].Data = "E";
                         else menuItems[i].Data = item.count.ToString();
                     }
                     i++;

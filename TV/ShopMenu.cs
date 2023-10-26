@@ -55,9 +55,10 @@ namespace IngameScript
                 string[] itemArray = items.Split(',');
                 foreach(string item in itemArray)
                 {
-                    if(GameRPG.itemStats.ContainsKey(item))
+                    Dictionary<string, string> itemStats = GameAction.GameInventory.GetItemStats(item);
+                    if(itemStats != null)
                     {
-                        this.items.Add(new ShopItem(GameRPG.itemStats[item]));
+                        this.items.Add(new ShopItem(itemStats));
                         AddLabel(item, this.items[this.items.Count-1].Cost.ToString());
                     }
                 }
@@ -91,6 +92,8 @@ namespace IngameScript
                 if (funds >= gameItem.Cost)
                 {
                     GameAction.GameVars.SetVar<int>(playerMoney, null, funds - gameItem.Cost);
+                    GameAction.GameInventory.AddItem(gameItem.Name);
+                    /*
                     if (GameRPG.playerInventory.ContainsKey(gameItem.Name))
                     {
                         GameRPG.playerInventory[gameItem.Name]++;
@@ -99,29 +102,31 @@ namespace IngameScript
                     {
                         GameRPG.playerInventory.Add(gameItem.Name, 1);
                     }
+                    */
                     string saytxt = purchaseText.Replace("ITEMNAME", gameItem.Name);
                     saytxt = saytxt.Replace("ITEMCOST", gameItem.Cost.ToString());
-                    GameRPG.Say(saytxt);
+                    GameAction.Game.Say(saytxt);
                 }
                 else
                 {
-                    GameRPG.Say(insufficaintFunds);
+                    GameAction.Game.Say(insufficaintFunds);
                 }
             }
             // sell an item
             void SellItem(ShopItem gameItem)
             {
-                if (GameRPG.playerInventory.ContainsKey(gameItem.Name) && GameRPG.playerInventory[gameItem.Name] > 0)
+                if (GameAction.GameInventory.HasItem(gameItem.Name))//GameRPG.playerInventory.ContainsKey(gameItem.Name) && GameRPG.playerInventory[gameItem.Name] > 0)
                 {
-                    GameRPG.playerInventory[gameItem.Name]--;
-                    if (GameRPG.playerGear[GameRPG.itemStats[gameItem.Name]["item_type"]] == gameItem.Name && GameRPG.playerInventory[gameItem.Name] == 0) GameRPG.playerGear[GameRPG.itemStats[gameItem.Name]["item_type"]] = "";
+                    GameAction.GameInventory.RemoveItem(gameItem.Name);                    
+                    //GameRPG.playerInventory[gameItem.Name]--;
+                    //if (GameRPG.playerGear[GameRPG.itemStats[gameItem.Name]["item_type"]] == gameItem.Name && GameRPG.playerInventory[gameItem.Name] == 0) GameRPG.playerGear[GameRPG.itemStats[gameItem.Name]["item_type"]] = "";
                     GameAction.GameVars.SetVar<int>(playerMoney, null, GameAction.GameVars.GetVarAs<int>(playerMoney, null, 0) + gameItem.Cost);
                     string saytxt = sellText.Replace("ITEMNAME", gameItem.Name);
                     saytxt = saytxt.Replace("ITEMCOST", gameItem.Cost.ToString());
-                    if (GameRPG.playerInventory[gameItem.Name] == 0) GameRPG.playerInventory.Remove(gameItem.Name);
-                    GameRPG.Say(saytxt);
+                    //if (GameRPG.playerInventory[gameItem.Name] == 0) GameRPG.playerInventory.Remove(gameItem.Name);
+                    GameAction.Game.Say(saytxt);
                 }
-                else GameRPG.Say(sellFailText);
+                else GameAction.Game.Say(sellFailText);
             }
         }
         //----------------------------------------------------------------------------------------------------

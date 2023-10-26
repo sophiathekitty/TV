@@ -26,35 +26,37 @@ namespace IngameScript
         //-----------------------------------------------------------------------
         // a very simple RPG game based on dragon warrior for the NES
         //-----------------------------------------------------------------------
-        public class GameRPG : IGameVars
+        public class GameRPG : IGameVars, IGameShop, IGameDialog, IGameInventory
         {
-            public static Action<string> Say;
-            public static Action<string> Shop;
-            public static Action Sell;
-            public static Action<string,int,int> Go;
-            public static Action<string,npc,string> Ask;
+            //public static Action<string> Say;
+            //public static Action<string> Shop;
+            //public static Action Sell;
+            //public static Action<string,int,int> Go;
+            //public static Action<string,npc,string> Ask;
+            public static Action<string> Encounter;
             npc promptNPC = null;
             string promptTag = "";
-            string title;
             string name;
             Tilemap map;
-            public static int playerX = 0;
-            public static int playerY = 0;
+            int playerX = 0;
+            int playerY = 0;
             string currentMap = "";
             AnimatedCharacter player;
-            public static Dictionary<string,double> playerStats = new Dictionary<string,double>();
-            public static Dictionary<string,int> playerMaxStats = new Dictionary<string,int>();
-            public static Dictionary<string,string> playerGear = new Dictionary<string,string>();
-            public static Dictionary<string, int> playerInventory = new Dictionary<string, int>();
-            public static string playerStatus = "";
-            public static Dictionary<string, int> enemyStats = new Dictionary<string, int>();
-            public static string enemyStatus = "";
-            public static string enemyName = "";
-            public static Dictionary<string,Dictionary<string,string>> itemStats = new Dictionary<string,Dictionary<string,string>>();
-            public static Dictionary<string, bool> gameBools = new Dictionary<string, bool>();
-            public static Dictionary<string, int> gameInts = new Dictionary<string, int>();
-            public static Dictionary<string, string> maps = new Dictionary<string, string>();
-            public static Dictionary<string,GameAction> gameLogic = new Dictionary<string,GameAction>();
+            Dictionary<string,double> playerStats = new Dictionary<string,double>();
+            Dictionary<string,int> playerMaxStats = new Dictionary<string,int>();
+            Dictionary<string, string> playerGear = new Dictionary<string, string>();
+            Dictionary<string, int> playerInventory = new Dictionary<string, int>();
+            string playerStatus = "";
+            Dictionary<string, int> enemyStats = new Dictionary<string, int>();
+            string enemyStatus = "";
+            string enemyName = "";
+            bool encounterOver = false;
+            Dictionary<string, Dictionary<string, string>> itemStats = new Dictionary<string, Dictionary<string, string>>();
+            Dictionary<string, bool> gameBools = new Dictionary<string, bool>();
+            Dictionary<string, int> gameInts = new Dictionary<string, int>();
+            Dictionary<string, string> maps = new Dictionary<string, string>();
+            Dictionary<string,GameAction> gameLogic = new Dictionary<string,GameAction>();
+
             //string playerHP = "hp";
             Screen tv;
             ScreenActionBar actionBar;
@@ -107,12 +109,13 @@ namespace IngameScript
                 loadGraphics();                
                 loadMapsList();
                 player = new AnimatedCharacter(AnimatedCharacter.CharacterLibrary["player"]);
-                Say = ShowDialog;
-                Ask = ShowDialogPrompt;
-                Go = LoadMap;
-                Shop = ShowShop;
-                Sell = SellItems;
+                //Say = ShowDialog;
+                //Ask = ShowDialogPrompt;
+                //Go = LoadMap;
                 GameAction.GameVars = this;
+                GameAction.GameShop = this;
+                GameAction.Game = this;
+                GameAction.GameInventory = this;
             }
             // parse game info
             void parseInfo(string data)
@@ -122,8 +125,7 @@ namespace IngameScript
                 foreach(string var in vars)
                 {
                     string[] pair = var.Split(':');
-                    if (pair[0] == "title") title = pair[1];
-                    else if (pair[0] == "name") name = pair[1];
+                    if (pair[0] == "name") name = pair[1];
                 }
             }
             // parse player info (create the default player)
@@ -325,6 +327,7 @@ namespace IngameScript
                 //GridInfo.Echo("game: update: player moved... update finished");
             }
             //-------------------------------------------------------------------
+            /*
             void ShowShop(string itemlist)
             {
                 GridInfo.Echo("ShowShop: " + itemlist);
@@ -340,27 +343,12 @@ namespace IngameScript
                 shopMenu.AddToScreen(tv);
                 gameActionMenu.Visible = false;
             }
+            
             void SellItems()
             {
-                GridInfo.Echo("SellItems");
-                List<ShopItem> shop_items = new List<ShopItem>();
-                foreach(var item in playerInventory)
-                {
-                    GridInfo.Echo("item: " + item.Key + " = " + item.Value);
-                    if (!itemStats.ContainsKey(item.Key) || !itemStats[item.Key].ContainsKey("cost")) continue;
-                    shop_items.Add(new ShopItem(itemStats[item.Key]));
-                }
-                GridInfo.Echo("SellItems: " + shop_items.Count);
-                if (shop_items.Count == 0)
-                {
-                    ShowDialog(NothingToSell);
-                    return;
-                }
-                shopMenu = new ShopMenu("Sell", 420, actionBar, shop_items);
-                shopMenu.playerSelling = true;
-                shopMenu.AddToScreen(tv);
-                gameActionMenu.Visible = false;
+                
             }
+            /*
             void ShowDialog(string dialog)
             {
                 if(dialogWindow == null) 
@@ -372,22 +360,21 @@ namespace IngameScript
             }
             void ShowDialogPrompt(string dialog, npc npc, string tag)
             {
-                //GridInfo.Echo("ShowDialogPrompt: " + dialog);
-                ShowDialog(dialog);
-                promptNPC = npc;
-                actionBar.SetActions("Yes No   Close");
-                promptTag = tag;
-                //GridInfo.Echo("ShowDialogPrompt: " + promptTag);
             }
+            */
             string ParseDialogText(string dialog)
             {
                 foreach(var gameInt in gameInts)
                 {
-                    dialog = dialog.Replace("gameInts." + gameInt.Key, gameInt.Value.ToString());
+                    dialog = dialog.Replace("ints." + gameInt.Key, gameInt.Value.ToString());
                 }
                 foreach (var playerStat in playerStats)
                 {
                     dialog = dialog.Replace("player." + playerStat.Key, playerStat.Value.ToString());
+                }
+                foreach(var enemyStat in enemyStats)
+                {
+                    dialog = dialog.Replace("enemy." + enemyStat.Key, enemyStat.Value.ToString());
                 }
                 return dialog;
             }
@@ -636,7 +623,8 @@ namespace IngameScript
                 // find the object to set the value on
                 if (objectName == "player")
                 {
-                    playerStats[name] = double.Parse(value);
+                    if (name == "status") playerStatus = value;
+                    else if(playerStats.ContainsKey(name)) playerStats[name] = double.Parse(value);
                 }
                 else if (objectName == "playerMax")
                 {
@@ -663,9 +651,19 @@ namespace IngameScript
                 {
                     if (name == "darkRadius") Tilemap.darkRadius = int.Parse(value);
                 }
+                else if (objectName == "enemy")
+                {
+                    if(name == "name") enemyName = value;
+                    else if (enemyStats.ContainsKey(name)) enemyStats[name] = int.Parse(value);
+                }
+                else if(objectName == "encounter")
+                {
+                    // set encounter vars
+                    if(name == "over") encounterOver = bool.Parse(value);
+                }
                 else
                 {
-                    //GridInfo.Echo("SetValue: unknown object: " + objectName);
+                    GridInfo.Echo("SetValue: unknown object: " + objectName);
                 }
             }
             void SetNPCValue(string name, npc me, string value)
@@ -748,12 +746,44 @@ namespace IngameScript
                 }
                 else if (objectName == "enemy")
                 {
-                    if (enemyStats.ContainsKey(name)) return enemyStats[name].ToString();
+                    if (name == "name") return enemyName;
+                    else if (enemyStats.ContainsKey(name)) return enemyStats[name].ToString();
                     else return "";
+                }
+                else if(objectName == "encounter")
+                {
+                    // get encounter vars
+                    if(name == "over") return encounterOver.ToString();
+                }
+                else if (objectName == "item")
+                {
+                    if (itemStats.ContainsKey(name))
+                    {
+                        if (itemStats[name].ContainsKey("effect")) return itemStats[name]["effect"];
+                        else if (itemStats[name].ContainsKey("item_type")) return itemStats[name]["item_type"];
+                        else if (itemStats[name].ContainsKey("cost")) return itemStats[name]["cost"];
+                        else if (itemStats[name].ContainsKey("name")) return itemStats[name]["name"];
+                        else if (itemStats[name].ContainsKey("defense")) return itemStats[name]["defense"];
+                        else if (itemStats[name].ContainsKey("attack")) return itemStats[name]["attack"];
+                    }
+                }
+                else if(objectName == "gear")
+                {
+                    int valueInt = 0;
+                    foreach(var gear in playerGear)
+                    {
+                        int gearInt = 0;
+                        if(itemStats.ContainsKey(gear.Value) && itemStats[gear.Value].ContainsKey(name))
+                        {
+                            int.TryParse(itemStats[gear.Value][name], out gearInt);
+                            valueInt += gearInt;
+                        }
+                    }
+                    return valueInt.ToString();
                 }
                 else
                 {
-                    //GridInfo.Echo("GetValue: unknown object: " + objectName + "... or key (" + name + ") wasn't present in dictionary.");
+                    GridInfo.Echo("GetValue: unknown object: " + objectName + "... or key (" + name + ") wasn't present in dictionary.");
                 }
                 return "";
             }
@@ -783,6 +813,144 @@ namespace IngameScript
                 }
                 //GridInfo.Echo("GetNPCValue: unknown property: " + name);
                 return "";
+            }
+            //-------------------------------------------------------------------
+            // IGameShop
+            //-------------------------------------------------------------------
+            public void Shop(string itemlist)
+            {
+                GridInfo.Echo("ShowShop: " + itemlist);
+                List<ShopItem> shop_items = new List<ShopItem>();
+                string[] items = itemlist.Split(',');
+                foreach (string item in items)
+                {
+                    if (itemStats.ContainsKey(item)) shop_items.Add(new ShopItem(itemStats[item]));
+                }
+                GridInfo.Echo("ShowShop: " + shop_items.Count);
+                shopMenu = new ShopMenu("Buy", 420, actionBar, shop_items);
+                shopMenu.playerSelling = false;
+                shopMenu.AddToScreen(tv);
+                gameActionMenu.Visible = false;
+            }
+            public void Sell()
+            {
+                GridInfo.Echo("SellItems");
+                List<ShopItem> shop_items = new List<ShopItem>();
+                foreach (var item in playerInventory)
+                {
+                    GridInfo.Echo("item: " + item.Key + " = " + item.Value);
+                    if (!itemStats.ContainsKey(item.Key) || !itemStats[item.Key].ContainsKey("cost")) continue;
+                    shop_items.Add(new ShopItem(itemStats[item.Key]));
+                }
+                GridInfo.Echo("SellItems: " + shop_items.Count);
+                if (shop_items.Count == 0)
+                {
+                    Say(NothingToSell);
+                    return;
+                }
+                shopMenu = new ShopMenu("Sell", 420, actionBar, shop_items);
+                shopMenu.playerSelling = true;
+                shopMenu.AddToScreen(tv);
+                gameActionMenu.Visible = false;
+            }
+            //-------------------------------------------------------------------
+            // IGameDialog
+            //-------------------------------------------------------------------
+            public void Say(string dialog)
+            {
+                if (dialogWindow == null)
+                {
+                    dialogWindow = new DialogWindow(ParseDialogText(dialog), new Vector2(500, 100), actionBar);
+                    dialogWindow.AddToScreen(tv);
+                }
+                else dialogWindow.Append(ParseDialogText(dialog));
+            }
+            public void Go(string map_name, int x, int y)
+            {
+                LoadMap(map_name, x, y);
+            }
+            public void Ask(string dialog, npc npc, string tag)
+            {
+                //GridInfo.Echo("ShowDialogPrompt: " + dialog);
+                Say(dialog);
+                promptNPC = npc;
+                actionBar.SetActions("Yes No   Close");
+                promptTag = tag;
+                //GridInfo.Echo("ShowDialogPrompt: " + promptTag);
+            }
+            public void Run(string action)
+            {
+                if(gameLogic.ContainsKey(action)) gameLogic[action].Run();
+            }
+            public int GetPlayerX()
+            {
+                return playerX;
+            }
+            public int GetPlayerY()
+            {
+                return playerY;
+            }
+            //-------------------------------------------------------------------
+            // IGameInventory
+            //-------------------------------------------------------------------
+            public bool HasItem(string item)
+            {
+                return playerInventory.ContainsKey(item) && playerInventory[item] > 0;
+            }
+
+            public void AddItem(string item)
+            {
+                if(playerInventory.ContainsKey(item)) playerInventory[item]++;
+                else playerInventory.Add(item, 1);
+            }
+
+            public void RemoveItem(string item)
+            {
+                if(playerInventory.ContainsKey(item))
+                {
+                    playerInventory[item]--;
+                    if (playerInventory[item] <= 0) playerInventory.Remove(item);
+                }
+            }
+            public bool HasEquipped(string item)
+            {
+                if(itemStats.ContainsKey(item) && itemStats[item].ContainsKey("item_type") && playerGear.ContainsKey(itemStats[item]["item_type"]))
+                {
+                    return playerGear[itemStats[item]["item_type"]] == item;
+                }
+                return false;
+            }
+            public bool CanEquip(string item)
+            {
+                if (itemStats.ContainsKey(item) && itemStats[item].ContainsKey("item_type"))
+                {
+                    return playerGear.ContainsKey(itemStats[item]["item_type"]);
+                }
+                return false;
+            }
+            public void Equip(string item)
+            {
+                if (itemStats.ContainsKey(item) && itemStats[item].ContainsKey("item_type") && playerGear.ContainsKey(itemStats[item]["item_type"]))
+                {
+                    playerGear[itemStats[item]["item_type"]] = item;
+                }
+                if (gameLogic.ContainsKey("CalculatePlayerStats")) gameLogic["CalculatePlayerStats"].Run();
+            }
+            public void Unequip(string item)
+            {
+                if (itemStats.ContainsKey(item) && itemStats[item].ContainsKey("item_type") && playerGear.ContainsKey(itemStats[item]["item_type"]))
+                {
+                    playerGear[itemStats[item]["item_type"]] = "";
+                }
+                if (gameLogic.ContainsKey("CalculatePlayerStats")) gameLogic["CalculatePlayerStats"].Run();
+            }
+            public Dictionary<string, string> GetItemStats(string item)
+            {
+                if(itemStats.ContainsKey(item))
+                {
+                    return itemStats[item];
+                }
+                return null;
             }
             //-------------------------------------------------------------------
         }

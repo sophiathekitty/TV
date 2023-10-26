@@ -48,6 +48,9 @@
     <Compile Include="GameItem.cs" />
     <Compile Include="GameItemMenu.cs" />
     <Compile Include="GameRPG.cs" />
+    <Compile Include="IGameDialog.cs" />
+    <Compile Include="IGameInventory.cs" />
+    <Compile Include="IGameShop.cs" />
     <Compile Include="IGameVars.cs" />
     <Compile Include="MainMenu.cs" />
     <Compile Include="npc.cs" />

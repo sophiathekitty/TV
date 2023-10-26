@@ -49,10 +49,12 @@ namespace IngameScript
                 {
                     return useAction.Run();
                 } 
-                else if(GameRPG.playerGear.ContainsKey(type))
+                else if(GameAction.GameInventory.CanEquip(Name))//GameRPG.playerGear.ContainsKey(type))
                 {
-                    if (GameRPG.playerGear[type] == Name) GameRPG.playerGear[type] = "";
-                    else GameRPG.playerGear[type] = Name;
+                    if(GameAction.GameInventory.HasEquipped(Name)) GameAction.GameInventory.Unequip(Name);
+                    else GameAction.GameInventory.Equip(Name);
+                    //if (GameRPG.playerGear[type] == Name) GameRPG.playerGear[type] = "";
+                    //else GameRPG.playerGear[type] = Name;
                 }
                 return false;
             }
