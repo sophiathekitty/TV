@@ -34,6 +34,7 @@ namespace IngameScript
                     AddLabel(action.Name);
                 }
                 AddLabel("Items");
+                AddLabel("Spells");
                 AddLabel("Quit Game");
             }
             // override input handling

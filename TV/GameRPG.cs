@@ -26,7 +26,7 @@ namespace IngameScript
         //-----------------------------------------------------------------------
         // a very simple RPG game based on dragon warrior for the NES
         //-----------------------------------------------------------------------
-        public class GameRPG : IGameVars, IGameShop, IGameDialog, IGameInventory
+        public class GameRPG : IGameVars, IGameShop, IGameDialog, IGameInventory, IGameSpells
         {
             //public static Action<string> Say;
             //public static Action<string> Shop;
@@ -56,13 +56,17 @@ namespace IngameScript
             Dictionary<string, int> gameInts = new Dictionary<string, int>();
             Dictionary<string, string> maps = new Dictionary<string, string>();
             Dictionary<string,GameAction> gameLogic = new Dictionary<string,GameAction>();
-
+            Dictionary<string, Dictionary<string, string>> playerSpells = new Dictionary<string, Dictionary<string, string>>();
+            string spellsLevel = "level";
+            string spellsCost = "mp";
+            string spellsBattle = "combat";
             //string playerHP = "hp";
             Screen tv;
             ScreenActionBar actionBar;
             GameActionMenu gameActionMenu;
             GameItemMenu gameItemMenu;
             ShopMenu shopMenu;
+            GameSpellMenu gameSpellMenu;
             PlayerStatsWindow playerStatsWindow;
             DialogWindow dialogWindow;
             string controls = "< v ^ > Menu";
@@ -105,6 +109,7 @@ namespace IngameScript
                     else if(part.Contains("type:game")) parseInfo(part);
                     else if(part.Contains("type:item")) parseItems(part);
                     else if(part.Contains("type:logic")) parseGameLogic(part);
+                    else if(part.Contains("type:spells")) parseSpells(part);
                 }
                 loadGraphics();                
                 loadMapsList();
@@ -116,6 +121,7 @@ namespace IngameScript
                 GameAction.GameShop = this;
                 GameAction.Game = this;
                 GameAction.GameInventory = this;
+                GameAction.GameSpells = this;
             }
             // parse game info
             void parseInfo(string data)
@@ -251,6 +257,30 @@ namespace IngameScript
                     }
                 }
             }
+            // parse spells
+            void parseSpells(string data)
+            {
+                string[] parts = data.Split('═');
+                foreach(string part in parts)
+                {
+                    if (part.StartsWith("type:spells"))
+                    {
+                        // get spells settings stuff... (not right now...)
+                    }
+                    else
+                    {
+                        Dictionary<string, string> spell = new Dictionary<string, string>();
+                        string[] vars = part.Split(',');
+                        foreach(string var in vars)
+                        {
+                            string[] pair = var.Split(':');
+                            if (pair.Length != 2) continue;
+                            spell.Add(pair[0], pair[1]);
+                        }
+                        if (spell.ContainsKey("name")) playerSpells.Add(spell["name"], spell);
+                    }
+                }
+            }
             //-------------------------------------------------------------------
             // load a game save
             // note: i haven't figured out what the save string looks like yet
@@ -265,7 +295,9 @@ namespace IngameScript
             }
             bool firstLoadMap = true;
             //-------------------------------------------------------------------
+            //
             // load a map
+            //
             //-------------------------------------------------------------------
             public void LoadMap(string map_name, int x, int y)
             {
@@ -312,7 +344,9 @@ namespace IngameScript
                 screen.RemoveSprite(player);
             }
             //-------------------------------------------------------------------
+            //
             // update
+            //
             //-------------------------------------------------------------------
             public void Update()
             {
@@ -327,41 +361,6 @@ namespace IngameScript
                 //GridInfo.Echo("game: update: player moved... update finished");
             }
             //-------------------------------------------------------------------
-            /*
-            void ShowShop(string itemlist)
-            {
-                GridInfo.Echo("ShowShop: " + itemlist);
-                List<ShopItem> shop_items = new List<ShopItem>();
-                string[] items = itemlist.Split(',');
-                foreach(string item in items)
-                {
-                    if(itemStats.ContainsKey(item)) shop_items.Add(new ShopItem(itemStats[item]));
-                }
-                GridInfo.Echo("ShowShop: " + shop_items.Count);
-                shopMenu = new ShopMenu("Buy", 420, actionBar, shop_items);
-                shopMenu.playerSelling = false;
-                shopMenu.AddToScreen(tv);
-                gameActionMenu.Visible = false;
-            }
-            
-            void SellItems()
-            {
-                
-            }
-            /*
-            void ShowDialog(string dialog)
-            {
-                if(dialogWindow == null) 
-                {
-                    dialogWindow = new DialogWindow(ParseDialogText(dialog), new Vector2(500, 100), actionBar);
-                    dialogWindow.AddToScreen(tv);
-                } 
-                else dialogWindow.Append(ParseDialogText(dialog));
-            }
-            void ShowDialogPrompt(string dialog, npc npc, string tag)
-            {
-            }
-            */
             string ParseDialogText(string dialog)
             {
                 foreach(var gameInt in gameInts)
@@ -380,7 +379,9 @@ namespace IngameScript
             }
             //-------------------------------------------------------------------
             //
+            //
             // handle input
+            //
             //
             //-------------------------------------------------------------------
             public string HandleInput(string input)
@@ -388,6 +389,7 @@ namespace IngameScript
                 if(playerStatsWindow != null) playerStatsWindow.Update(playerStats);
                 string action = "";
                 if (dialogWindow != null) action = dialogWindow.HandleInput(input);
+                else if (gameSpellMenu != null) action = gameSpellMenu.HandleInput(input);
                 else if (shopMenu != null) action = shopMenu.HandleInput(input);
                 else if (gameItemMenu != null) action = gameItemMenu.HandleInput(input);
                 else if (gameActionMenu == null) action = actionBar.HandleInput(input);
@@ -426,6 +428,7 @@ namespace IngameScript
                 else if(action == "back")
                 {
                     if (gameItemMenu != null) HideItemsMenu();
+                    else if (gameSpellMenu != null) HideSpellMenu();
                     else if (shopMenu != null) HideShopMenu();
                     else CloseMenu();
                     return "";
@@ -476,7 +479,30 @@ namespace IngameScript
                     ShowItemsMenu();
                     return "";
                 }
+                else if(action == "spells")
+                {
+                    ShowSpellsMenu();
+                    return "";
+                }
                 return action;
+            }
+            void ShowSpellsMenu()
+            {
+                GridInfo.Echo("ShowSpellsMenu");
+                gameSpellMenu = new GameSpellMenu("Spells", 300, actionBar);
+                gameSpellMenu.AddToScreen(tv);
+                if (gameActionMenu != null) gameActionMenu.Visible = false;
+            }
+            void HideSpellMenu()
+            {
+                GridInfo.Echo("HideSpellMenu");
+                if (gameActionMenu != null) gameActionMenu.Visible = true;
+                GridInfo.Echo("HideSpellMenu:1");
+                if(gameSpellMenu == null) return;
+                GridInfo.Echo("HideSpellMenu:2");
+                gameSpellMenu.RemoveFromScreen(tv);
+                GridInfo.Echo("HideSpellMenu:3");
+                gameSpellMenu = null;
             }
             void ShowItemsMenu()
             {
@@ -897,13 +923,11 @@ namespace IngameScript
             {
                 return playerInventory.ContainsKey(item) && playerInventory[item] > 0;
             }
-
             public void AddItem(string item)
             {
                 if(playerInventory.ContainsKey(item)) playerInventory[item]++;
                 else playerInventory.Add(item, 1);
             }
-
             public void RemoveItem(string item)
             {
                 if(playerInventory.ContainsKey(item))
@@ -952,6 +976,71 @@ namespace IngameScript
                 }
                 return null;
             }
+            //-------------------------------------------------------------------
+            // IGameSpells
+            //-------------------------------------------------------------------
+            public Dictionary<string, int> GetSpells()
+            {
+                Dictionary<string, int> spells = new Dictionary<string, int>();
+                foreach(var spell in playerSpells)
+                {
+                    int cost = 0;
+                    if (spell.Value.ContainsKey("cost")) int.TryParse(spell.Value["cost"], out cost);
+                    spells.Add(spell.Key, 0);
+                }
+                return spells;
+            }
+
+            public void CastSpell(string spell)
+            {
+                GridInfo.Echo("CastSpell: " + spell);
+                if (playerSpells.ContainsKey(spell) && playerSpells[spell].ContainsKey("effect") && gameLogic.ContainsKey(playerSpells[spell]["effect"]))
+                {
+                    int cost = 0;
+                    int.TryParse(playerSpells[spell]["cost"], out cost);
+                    GridInfo.Echo("CastSpell: " + cost + " :: " + playerStats[spellsCost]);
+                    if (playerStats[spellsCost] < cost) return;
+                    playerStats[spellsCost] -= cost;
+                    HideSpellMenu();
+                    gameLogic[playerSpells[spell]["effect"]].Run();
+                }
+            }
+
+            public bool CanCastSpell(string spell)
+            {
+                GridInfo.Echo("CanCastSpell: " + spell);
+                if (playerSpells.ContainsKey(spell) && playerSpells[spell].ContainsKey("cost"))
+                {
+                    int cost = 0;
+                    int.TryParse(playerSpells[spell]["cost"], out cost);
+                    GridInfo.Echo("CanCastSpell: " + cost + " :: " + playerStats[spellsCost]);
+                    return playerStats[spellsCost] >= cost;
+                }
+                return false;
+            }
+            public bool HasUnlockedSpell(string spell)
+            {
+                if(playerSpells.ContainsKey(spell) && playerSpells[spell].ContainsKey(spellsLevel))
+                {
+                    int spellLevel = 0;
+                    int.TryParse(playerSpells[spell][spellsLevel], out spellLevel);
+                    return playerStats[spellsLevel] >= spellLevel;
+                }
+                return false;
+            }
+            public bool IsFieldSpell(string spell)
+            {
+                if (!playerSpells.ContainsKey(spell)) return false;
+                if (playerSpells[spell].ContainsKey("combat")) return playerSpells[spell]["combat"] == "false";
+                return true;
+            }
+            public bool IsCombatSpell(string spell)
+            {
+                if(!playerSpells.ContainsKey(spell)) return false;
+                if(playerSpells[spell].ContainsKey("combat")) return playerSpells[spell]["combat"] == "true";
+                return true;
+            }
+
             //-------------------------------------------------------------------
         }
         //-----------------------------------------------------------------------

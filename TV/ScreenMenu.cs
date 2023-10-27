@@ -37,6 +37,7 @@ namespace IngameScript
             float headerHeight = 1.2f;
             ScreenActionBar actionBar;
             public bool handleEditing = true;
+            public bool lowerCaseActions = true;
             public string menuScrollActions
             {
                 get
@@ -224,6 +225,7 @@ namespace IngameScript
                     if (btn > 0)
                     {
                         string action = actionBar.HandleInput(btn - 1);
+                        if(menuItems.Count == 0) return action;
                         if (action == "up")
                         {
                             SelectedItem.Editing = false;
@@ -238,7 +240,8 @@ namespace IngameScript
                         {
                             if (SelectedItem.IsAction || !handleEditing)
                             {
-                                return (SelectedItem.Label.ToLower());
+                                if(lowerCaseActions) return SelectedItem.Label.ToLower();
+                                else return SelectedItem.Label;
                             }
                             else if (SelectedItem.IsToggle)
                             {
