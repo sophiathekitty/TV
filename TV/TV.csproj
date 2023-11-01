@@ -42,6 +42,8 @@
     <Compile Include="AnimatedSceneEditor.cs" />
     <Compile Include="AnimatedSceneEditorMenu.cs" />
     <Compile Include="AnimatedSpriteEditMenu.cs" />
+    <Compile Include="BattleMenu.cs" />
+    <Compile Include="BattleWindow.cs" />
     <Compile Include="DialogWindow.cs" />
     <Compile Include="GameAction.cs" />
     <Compile Include="GameActionMenu.cs" />
@@ -50,6 +52,7 @@
     <Compile Include="GameRPG.cs" />
     <Compile Include="GameSpellMenu.cs" />
     <Compile Include="IGameDialog.cs" />
+    <Compile Include="IGameEncounters.cs" />
     <Compile Include="IGameInventory.cs" />
     <Compile Include="IGameShop.cs" />
     <Compile Include="IGameSpells.cs" />

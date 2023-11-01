@@ -7,6 +7,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
 using VRage;
 using VRage.Collections;
@@ -46,6 +47,37 @@ namespace IngameScript
             char roofTile = ' ';
             char darkTile = ' ';
             static int _darkRadius = 1;
+            public static bool hasEncounters
+            {
+                get
+                {
+                    GridInfo.Echo("hasEncounters: " + encounterGroups.Count);
+                    return encounterGroups.Count > 0;
+                }
+            }
+            static string[] encounterMap;
+            static Dictionary<char,string> encounterGroups = new Dictionary<char,string>();
+            public static string GetEncounter(int x, int y)
+            {
+                GridInfo.Echo("GetEncounter: " + x + "," + y);
+                if (encounterMap == null) return "";
+                if(encounterGroups.Count == 0) return "";
+                else if(encounterGroups.Count == 1) return encounterGroups.First().Value;
+                // we need to remap from tileMap scale to encounterMap scale
+                // so i can get the char in encounterMap that goes with my x,y in tileMap.. it's not just half the size.
+                float yScale = (float)encounterMap.Length / (float)tileMap.Length;
+                GridInfo.Echo("GetEncounter: " + encounterMap.Length + " / " + tileMap.Length + " = " + yScale);
+                float xScale = (float)encounterMap[0].Length / (float)tileMap[0].Length;
+                GridInfo.Echo("GetEncounter: " + encounterMap[0].Length + " / " + tileMap[0].Length + " = " + xScale);
+                int encX = (int)(x * xScale);
+                int encY = (int)(y * yScale);
+                GridInfo.Echo("GetEncounter: " + x + "," + y + " -> " + encX + "," + encY);
+                char enc = encounterMap[encY][encX];
+                GridInfo.Echo("GetEncounter: " + enc);
+                if(!encounterGroups.ContainsKey(enc)) return "";
+                GridInfo.Echo("GetEncounter: " + encounterGroups[enc]); 
+                return encounterGroups[enc];
+            }
             public static int darkRadius 
             {
                 get
@@ -268,6 +300,8 @@ namespace IngameScript
             public void LoadMap(string data)
             {
                 roofMap = null;
+                encounterGroups.Clear();
+                encounterMap = null;
                 //darkRadius = 1;
                 //GridInfo.Echo("LoadMap: data: "+data.Length);
                 string[] parts = data.Split('║');
@@ -313,6 +347,35 @@ namespace IngameScript
                         // load an exit
                         exits.Add(new TilemapExit(part));
                     }
+                    else if (part.StartsWith("type:encounters"))
+                    {
+                        GridInfo.Echo("LoadMap: encounters:0: " + part.Length);
+                        string[] enc_parts = part.Split('═');
+                        if (enc_parts.Length != 2) continue;
+                        string[] enc_info = enc_parts[0].Split(',');
+                        GridInfo.Echo("LoadMap: encounters:1: " + enc_info.Length);
+                        char group = ' ';
+                        foreach(string info in enc_info)
+                        {
+                            GridInfo.Echo("LoadMap: encounters:2: " + info);
+                            string[] pair = info.Split(':');
+                            if (pair.Length == 2)
+                            {
+                                GridInfo.Echo("LoadMap: encounters:3: " + pair[0] + ": " + pair[1]);
+                                if (pair[0] == "id") group = pair[1][0];
+                            }
+                        }
+                        GridInfo.Echo("LoadMap: encounters:4: " + group + ": " + enc_parts[1]);
+                        if (group == ' ') continue;
+                        encounterGroups.Add(group, enc_parts[1]);
+                    }
+                    else if (part.StartsWith("type:encounterMap"))
+                    {
+                        GridInfo.Echo("LoadMap: encounterMap: " + part.Length);
+                        string[] enc = part.Split('═');
+                        if (enc.Length != 2) continue;
+                        encounterMap = enc[1].Split('\n');
+                    }
                 }
             }
             // clear current map so we can load a new one
@@ -345,7 +408,7 @@ namespace IngameScript
             {
                // go through the viewports tiles and apply them to the visible tiles
                 //Vector2 tileSize = new Vector2(screenWidth / viewPortWidth, screenHeight / viewPortHeight);
-                Vector2 tilePos = new Vector2(0, 0);
+                //Vector2 tilePos = new Vector2(0, 0);
                 int i = 0;
                 if(visibleTiles.Count == 0) return;
                 //GridInfo.Echo("ApplyViewPortTiles: " + viewPortX + "," + viewPortY + " | "+i+" / "+visibleTiles.Count);

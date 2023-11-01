@@ -57,7 +57,9 @@ namespace IngameScript
                 {
                     GridInfo.Echo("GameSpellMenu:2:Cast " + action);
                     GameAction.GameSpells.CastSpell(action);
-                    return "";
+                    //GameAction.GameVars.SetVar<bool>("encounter.playerTurn", null, false);
+                    return "turn done";
+                    //return "";
                 }
                 return action;
             }

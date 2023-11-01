@@ -62,7 +62,7 @@ namespace IngameScript
                     if (action == gameItem.Name.ToLower())
                     {
                         if(gameItem.Run()) return "back";
-                        return "";
+                        return "turn done";
                     }
                 }
                 return action;
