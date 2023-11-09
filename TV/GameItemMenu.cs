@@ -61,8 +61,9 @@ namespace IngameScript
                 {
                     if (action == gameItem.Name.ToLower())
                     {
-                        if(gameItem.Run()) return "back";
-                        return "turn done";
+                        string res = "back";
+                        if(GameAction.GameEncounters != null && GameAction.GameEncounters.IsInEncounter()) res = "turn done";
+                        if(gameItem.Run()) return res;
                     }
                 }
                 return action;

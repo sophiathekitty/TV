@@ -24,7 +24,7 @@ namespace IngameScript
     {
         public interface IGameEncounters
         {
-            void StartEncounter(string enemyGroup);
+            void StartEncounter(string enemyGroup, npc npc = null);
             void EndEncounter();
             bool IsInEncounter();
         }

@@ -245,6 +245,12 @@ namespace IngameScript
                         }                       
                         GameInventory.RemoveItem(param);
                     }
+                    else if(cmd == "csay")
+                    {
+                        GridInfo.Echo("GameAction: csay: " + param);
+                        Game.Say(param);
+                        continue;
+                    }
                     else if(cmd == "say") 
                     {
                         // say something
@@ -307,7 +313,7 @@ namespace IngameScript
                     {
                         GridInfo.Echo("GameAction: encounter: " + param);
                         if(param == "map.encounter") param = Tilemap.GetEncounter(Game.GetPlayerX(),Game.GetPlayerY());
-                        GameEncounters.StartEncounter(param);
+                        GameEncounters.StartEncounter(param,me);
                     }
                     else if (cmd == "encounterOver")
                     {
@@ -327,7 +333,7 @@ namespace IngameScript
             // do a comparison
             bool Compare(string param)
             {
-                GridInfo.Echo("GameAction: Compare: " + param);
+                GridInfo.Echo("GameAction:0: Compare: " + param);
                 bool result = false;
                 // do check
                 char opperator = '=';
@@ -335,6 +341,7 @@ namespace IngameScript
                 else if (param.Contains(">")) opperator = '>';
                 string[] pair = param.Split(opperator);
                 string value = GameVars.GetVarAs<string>(pair[0], me);
+                GridInfo.Echo("GameAction:1: Compare: " + pair[0] + " = " + value);
                 float fvalue;
                 bool bvalue;
                 bool isFloat = float.TryParse(value, out fvalue);

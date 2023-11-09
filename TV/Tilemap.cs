@@ -51,7 +51,7 @@ namespace IngameScript
             {
                 get
                 {
-                    GridInfo.Echo("hasEncounters: " + encounterGroups.Count);
+                    //GridInfo.Echo("hasEncounters: " + encounterGroups.Count);
                     return encounterGroups.Count > 0;
                 }
             }
@@ -59,23 +59,23 @@ namespace IngameScript
             static Dictionary<char,string> encounterGroups = new Dictionary<char,string>();
             public static string GetEncounter(int x, int y)
             {
-                GridInfo.Echo("GetEncounter: " + x + "," + y);
+                //GridInfo.Echo("GetEncounter: " + x + "," + y);
                 if (encounterMap == null) return "";
                 if(encounterGroups.Count == 0) return "";
                 else if(encounterGroups.Count == 1) return encounterGroups.First().Value;
                 // we need to remap from tileMap scale to encounterMap scale
                 // so i can get the char in encounterMap that goes with my x,y in tileMap.. it's not just half the size.
                 float yScale = (float)encounterMap.Length / (float)tileMap.Length;
-                GridInfo.Echo("GetEncounter: " + encounterMap.Length + " / " + tileMap.Length + " = " + yScale);
+                //GridInfo.Echo("GetEncounter: " + encounterMap.Length + " / " + tileMap.Length + " = " + yScale);
                 float xScale = (float)encounterMap[0].Length / (float)tileMap[0].Length;
-                GridInfo.Echo("GetEncounter: " + encounterMap[0].Length + " / " + tileMap[0].Length + " = " + xScale);
+                //GridInfo.Echo("GetEncounter: " + encounterMap[0].Length + " / " + tileMap[0].Length + " = " + xScale);
                 int encX = (int)(x * xScale);
                 int encY = (int)(y * yScale);
-                GridInfo.Echo("GetEncounter: " + x + "," + y + " -> " + encX + "," + encY);
+                //GridInfo.Echo("GetEncounter: " + x + "," + y + " -> " + encX + "," + encY);
                 char enc = encounterMap[encY][encX];
-                GridInfo.Echo("GetEncounter: " + enc);
+                //GridInfo.Echo("GetEncounter: " + enc);
                 if(!encounterGroups.ContainsKey(enc)) return "";
-                GridInfo.Echo("GetEncounter: " + encounterGroups[enc]); 
+                //GridInfo.Echo("GetEncounter: " + encounterGroups[enc]); 
                 return encounterGroups[enc];
             }
             public static int darkRadius 
@@ -87,7 +87,7 @@ namespace IngameScript
                 set
                 {
                     _darkRadius = value;
-                    GridInfo.Echo("darkRadius: " + _darkRadius);
+                    //GridInfo.Echo("darkRadius: " + _darkRadius);
                     if (_darkRadius < 1) _darkRadius = 1;
                 }
             }
@@ -176,14 +176,14 @@ namespace IngameScript
             public bool IsGround(int x, int y)
             {
                 char tile = GetTile(x, y);
-                //GridInfo.Echo("IsGround: " + tile +" ??? " + groundTiles);
+                ////GridInfo.Echo("IsGround: " + tile +" ??? " + groundTiles);
                 return groundTiles.Contains(tile);
             }
             // is this tile toxic?
             public static bool IsToxic(int x, int y)
             {
                 char tile = GetTile(x, y);
-                GridInfo.Echo("IsToxic: " + tile + " ??? " + toxicTiles);
+                //GridInfo.Echo("IsToxic: " + tile + " ??? " + toxicTiles);
                 return toxicTiles.Contains(tile);
             }
             public static int ToxicLevel(int x, int y)
@@ -197,7 +197,7 @@ namespace IngameScript
             {
                 get
                 {
-                    //GridInfo.Echo("IsOnToxic: " + GameAction.Game.GetPlayerX() + "," + GameAction.Game.GetPlayerY());
+                    ////GridInfo.Echo("IsOnToxic: " + GameAction.Game.GetPlayerX() + "," + GameAction.Game.GetPlayerY());
                     return IsToxic(GameAction.Game.GetPlayerX(), GameAction.Game.GetPlayerY());
                 }
             }
@@ -227,7 +227,7 @@ namespace IngameScript
             {
                 bool edge = false;
                 if(x < 0 || x >= mapWidth || y < 0 || y >= mapHeight) edge = true;
-                //GridInfo.Echo("ExitOn: " + x + "," + y + " edge:"+edge.ToString());
+                ////GridInfo.Echo("ExitOn: " + x + "," + y + " edge:"+edge.ToString());
                 foreach (TilemapExit exit in exits)
                 {
                     if (edge && (exit.Edge || exit.X == -1 || exit.Y == -1)) return exit;
@@ -251,7 +251,7 @@ namespace IngameScript
             // load the tile set from a string
             public void LoadTiles(string data)
             {
-                //GridInfo.Echo("LoadTiles:");
+                ////GridInfo.Echo("LoadTiles:");
                 if(tiles == null) tiles = new Dictionary<char,string>();
                 tiles.Clear();
                 string[] parts = data.Split('║');
@@ -265,7 +265,7 @@ namespace IngameScript
                         foreach(string var in vars)
                         {
                             string[] pair = var.Split(':');
-                            //if (pair.Length > 0) GridInfo.Echo("LoadTiles: " + pair[0]);
+                            //if (pair.Length > 0) //GridInfo.Echo("LoadTiles: " + pair[0]);
                             if (pair.Length == 2)
                             {
                                 if (pair[0] == "ground") groundTiles = pair[1];
@@ -303,14 +303,14 @@ namespace IngameScript
                 encounterGroups.Clear();
                 encounterMap = null;
                 //darkRadius = 1;
-                //GridInfo.Echo("LoadMap: data: "+data.Length);
+                ////GridInfo.Echo("LoadMap: data: "+data.Length);
                 string[] parts = data.Split('║');
-                //GridInfo.Echo("LoadMap: parts: "+parts.Length);    
+                ////GridInfo.Echo("LoadMap: parts: "+parts.Length);    
                 foreach(string part in parts)
                 {
                     if (part.StartsWith("type:map"))
                     {
-                        //GridInfo.Echo("LoadMap: map: "+part.Length);
+                        ////GridInfo.Echo("LoadMap: map: "+part.Length);
                         // get map tiles
                         string[] map_parts = part.Split('═');
                         if(map_parts.Length != 2) return;
@@ -349,29 +349,29 @@ namespace IngameScript
                     }
                     else if (part.StartsWith("type:encounters"))
                     {
-                        GridInfo.Echo("LoadMap: encounters:0: " + part.Length);
+                        //GridInfo.Echo("LoadMap: encounters:0: " + part.Length);
                         string[] enc_parts = part.Split('═');
                         if (enc_parts.Length != 2) continue;
                         string[] enc_info = enc_parts[0].Split(',');
-                        GridInfo.Echo("LoadMap: encounters:1: " + enc_info.Length);
+                        //GridInfo.Echo("LoadMap: encounters:1: " + enc_info.Length);
                         char group = ' ';
                         foreach(string info in enc_info)
                         {
-                            GridInfo.Echo("LoadMap: encounters:2: " + info);
+                            //GridInfo.Echo("LoadMap: encounters:2: " + info);
                             string[] pair = info.Split(':');
                             if (pair.Length == 2)
                             {
-                                GridInfo.Echo("LoadMap: encounters:3: " + pair[0] + ": " + pair[1]);
+                                //GridInfo.Echo("LoadMap: encounters:3: " + pair[0] + ": " + pair[1]);
                                 if (pair[0] == "id") group = pair[1][0];
                             }
                         }
-                        GridInfo.Echo("LoadMap: encounters:4: " + group + ": " + enc_parts[1]);
+                        //GridInfo.Echo("LoadMap: encounters:4: " + group + ": " + enc_parts[1]);
                         if (group == ' ') continue;
                         encounterGroups.Add(group, enc_parts[1]);
                     }
                     else if (part.StartsWith("type:encounterMap"))
                     {
-                        GridInfo.Echo("LoadMap: encounterMap: " + part.Length);
+                        //GridInfo.Echo("LoadMap: encounterMap: " + part.Length);
                         string[] enc = part.Split('═');
                         if (enc.Length != 2) continue;
                         encounterMap = enc[1].Split('\n');

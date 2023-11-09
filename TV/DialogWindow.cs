@@ -64,8 +64,11 @@ namespace IngameScript
             }
             public void Append(string text)
             {
-                dialogText += "\n\n" + text;
-                ShowTextBlock();
+                GridInfo.Echo("dialog append:" +dialogText+ " | "+text);
+                if (dialogText != "") dialogText += "  ";
+                dialogText += text;
+                GridInfo.Echo("dialog append:" +dialogText);
+                //ShowTextBlock();
             }
             void ShowTextBlock()
             {

@@ -46,9 +46,9 @@ namespace IngameScript
             Dictionary<string,int> playerMaxStats = new Dictionary<string,int>();
             Dictionary<string, string> playerGear = new Dictionary<string, string>();
             Dictionary<string, int> playerInventory = new Dictionary<string, int>();
-            string playerStatus = "";
+            string playerStatus = "ok";
             Dictionary<string, int> enemyStats = new Dictionary<string, int>();
-            string enemyStatus = "";
+            string enemyStatus = "ok";
             string enemyName = "";
             bool encounterOver = false;
             Dictionary<string, Dictionary<string, string>> itemStats = new Dictionary<string, Dictionary<string, string>>();
@@ -136,7 +136,7 @@ namespace IngameScript
                 foreach(string var in vars)
                 {
                     string[] pair = var.Split(':');
-                    if (pair[0] == "name") name = pair[1];
+                    if (pair[0].Trim() == "name") name = pair[1].Trim();
                 }
             }
             // parse player info (create the default player)
@@ -144,9 +144,9 @@ namespace IngameScript
             {
                 //GridInfo.Echo("parsePlayer:");
                 string[] parts = data.Split('═');
-                if(parts.Length > 1) parsePlayerStats(parts[1]);
-                if(parts.Length > 2) parsePlayerGear(parts[2]);
-                if(parts.Length > 3) parsePlayerLocation(parts[3]);
+                if(parts.Length > 1) parsePlayerStats(parts[1].Trim());
+                if(parts.Length > 2) parsePlayerGear(parts[2].Trim());
+                if(parts.Length > 3) parsePlayerLocation(parts[3].Trim());
             }
             // parse player stats
             void parsePlayerStats(string data)
@@ -156,8 +156,8 @@ namespace IngameScript
                 foreach(string part in parts)
                 {
                     string[] pair = part.Split(':');
-                    playerStats.Add(pair[0], int.Parse(pair[1]));
-                    playerMaxStats.Add(pair[0], int.Parse(pair[1]));
+                    playerStats.Add(pair[0].Trim(), int.Parse(pair[1].Trim()));
+                    playerMaxStats.Add(pair[0].Trim(), int.Parse(pair[1].Trim()));
                 }
             }
             // parse player gear
@@ -168,8 +168,8 @@ namespace IngameScript
                 foreach(string part in parts)
                 {
                     string[] pair = part.Split(':');
-                    playerGear.Add(pair[0], pair[1]);
-                    if (!playerInventory.ContainsKey(pair[1])) playerInventory.Add(pair[1], 1);
+                    playerGear.Add(pair[0].Trim(), pair[1].Trim());
+                    if (!playerInventory.ContainsKey(pair[1].Trim())) playerInventory.Add(pair[1].Trim(), 1);
                 }
             }
             // parse player location
@@ -180,10 +180,11 @@ namespace IngameScript
                 foreach(string part in parts)
                 {
                     string[] vars = part.Split(':');
+                    string var_name = vars[0].Trim();
                     if(vars.Length != 2) continue;
-                    if (vars[0] == "map") currentMap = vars[1];
-                    else if (vars[0] == "x") playerX = int.Parse(vars[1]);
-                    else if (vars[0] == "y") playerY = int.Parse(vars[1]);
+                    if (var_name == "map") currentMap = vars[1].Trim();
+                    else if (var_name == "x") playerX = int.Parse(vars[1].Trim());
+                    else if (var_name == "y") playerY = int.Parse(vars[1].Trim());
                 }
             }
             // parse a group of items
@@ -197,7 +198,7 @@ namespace IngameScript
                     foreach(string var in vars)
                     {
                         string[] pair = var.Split(':');
-                        if (pair[0] == "item_type") item_type = pair[1];
+                        if (pair[0].Trim() == "item_type") item_type = pair[1].Trim();
                     }
                 }
                 for(int i = 1; i < parts.Length; i++)
@@ -210,8 +211,8 @@ namespace IngameScript
                     {
                         string[] pair = var.Split(':');
                         if(pair.Length != 2) continue;
-                        stats.Add(pair[0], pair[1]);
-                        if (pair[0] == "name") item_name = pair[1];
+                        stats.Add(pair[0].Trim(), pair[1].Trim());
+                        if (pair[0].Trim() == "name") item_name = pair[1].Trim();
                     }
                     if(item_name != "") itemStats.Add(item_name,stats);
                 }
@@ -241,7 +242,7 @@ namespace IngameScript
                             //map_name:map_address
                             string[] pair = var.Split(':');
                             if (pair.Length != 2) continue;
-                            maps.Add(pair[0], pair[1]);
+                            maps.Add(pair[0].Trim(), pair[1].Trim());
                             
 
                         }
@@ -280,7 +281,7 @@ namespace IngameScript
                         {
                             string[] pair = var.Split(':');
                             if (pair.Length != 2) continue;
-                            spell.Add(pair[0], pair[1]);
+                            spell.Add(pair[0].Trim(), pair[1].Trim());
                         }
                         if (spell.ContainsKey("name")) playerSpells.Add(spell["name"], spell);
                     }
@@ -469,22 +470,20 @@ namespace IngameScript
                         }
                         if (encounterOver)
                         {
-                            GridInfo.Echo("close... encounterOver: ");
                             battleWindow.RemoveFromScreen(tv);
-                            GridInfo.Echo("close... battleWindow not null: ");
                             battleWindow = null;
-                            GridInfo.Echo("close... battleWindow null: ");
                             battleMenu.RemoveFromScreen(tv);
-                            GridInfo.Echo("close... battleMenu not null: ");
                             battleMenu = null;
-                            GridInfo.Echo("close... battleMenu null: ");
                             actionBar.SetActions(controls);
-                            GridInfo.Echo("close... actionBar not null: ");
                             playerStatsWindow.RemoveFromScreen(tv);
-                            GridInfo.Echo("close... playerStatsWindow not null: ");
                             playerStatsWindow = null;
-                            GridInfo.Echo("close... playerStatsWindow null: ");
                             encounterOver = false;
+                            //GridInfo.Echo("encounterOver!"+gameBools.ContainsKey("playerWon").ToString() + ", " + gameBools["playerWon"].ToString() + ", " + (promptNPC != null).ToString() + ", " + (promptNPC.encounterWin != null).ToString());
+                            if(gameBools.ContainsKey("playerWon") && gameBools["playerWon"] && promptNPC != null && promptNPC.encounterWin != null)
+                            {
+                                GridInfo.Echo("encounterWin: " + promptNPC.encounterWin.Name);
+                                promptNPC.encounterWin.Run();
+                            }
                         } else actionBar.SetActions(battleMenu.menuScrollActions);
                         //GridInfo.Echo("close... battleMenu not null: "+battleMenu.menuScrollActions);
                         return "";
@@ -536,6 +535,8 @@ namespace IngameScript
                 else if(action == "turn done")
                 {
                     isPlayerTurn = false;
+                    if (gameItemMenu != null) HideItemsMenu();
+                    if (gameSpellMenu != null) HideSpellMenu();
                 }
                 return action;
             }
@@ -621,6 +622,9 @@ namespace IngameScript
             }
             void CloseMenu()
             {
+                if (gameItemMenu != null) HideItemsMenu();
+                if (gameSpellMenu != null) HideSpellMenu();
+                if (shopMenu != null) HideShopMenu();
                 if (gameActionMenu == null) return;
                 gameActionMenu.RemoveFromScreen(tv);
                 gameActionMenu = null;
@@ -708,8 +712,8 @@ namespace IngameScript
                 {
                     string[] parts = name.Split('.');
                     //GridInfo.Echo("SetValue: parts: " + parts.Length);
-                    objectName = parts[0];
-                    name = parts[1];
+                    objectName = parts[0].Trim();
+                    name = parts[1].Trim();
                 }
                 // find the object to set the value on
                 if (objectName == "player")
@@ -746,6 +750,7 @@ namespace IngameScript
                 else if (objectName == "enemy")
                 {
                     if(name == "name") enemyName = value;
+                    else if (name == "status") enemyStatus = value;
                     else if (enemyStats.ContainsKey(name)) enemyStats[name] = (int)double.Parse(value);
                 }
                 else if(objectName == "encounter")
@@ -753,7 +758,7 @@ namespace IngameScript
                     GridInfo.Echo("SetValue: encounter: " + name + " = " + value);
                     // set encounter vars
                     if(name == "over") encounterOver = bool.Parse(value);
-                    if (encounterOver) battleWindow.HideEnemy();
+                    if (encounterOver && battleWindow != null) battleWindow.HideEnemy();
                 }
                 else
                 {
@@ -794,14 +799,16 @@ namespace IngameScript
                 if (name.Contains("."))
                 {
                     string[] parts = name.Split('.');
-                    objectName = parts[0];
-                    name = parts[1];
+                    objectName = parts[0].Trim();
+                    name = parts[1].Trim();
                 }
                 // find the object to set the value on
                 if (objectName == "player")
                 {
                     if (name == "x") return playerX.ToString();
+                    else if (name == "status") return playerStatus;
                     else if (name == "y") return playerY.ToString();
+                    else
                     if (playerStats.ContainsKey(name)) return playerStats[name].ToString();
                 }
                 else if (objectName == "playerMax" && playerMaxStats.ContainsKey(name))
@@ -812,9 +819,16 @@ namespace IngameScript
                 {
                     return GetNPCValue(name, me);
                 }
-                else if (objectName == "inventory" && playerInventory.ContainsKey(name))
+                else if (objectName == "inventory")
                 {
-                    return playerInventory[name].ToString();
+                    GridInfo.Echo("GetValue: inventory: " + name);
+                    if (playerInventory.ContainsKey(name))
+                    {
+                        GridInfo.Echo("GetValue: inventory: " + name + " = " + playerInventory[name]);
+                        return playerInventory[name].ToString();
+                    }
+                    GridInfo.Echo("GetValue: inventory: " + name + " not found");
+                    return "0";
                 }
                 else if (objectName == "bools")
                 {
@@ -844,6 +858,7 @@ namespace IngameScript
                 else if (objectName == "enemy")
                 {
                     if (name == "name") return enemyName;
+                    else if (name == "status") return enemyStatus;
                     else if (enemyStats.ContainsKey(name)) return enemyStats[name].ToString();
                     else return "";
                 }
@@ -1117,8 +1132,9 @@ namespace IngameScript
             //-------------------------------------------------------------------
             // IGameEncounter
             //-------------------------------------------------------------------
-            public void StartEncounter(string enemyGroup)
+            public void StartEncounter(string enemyGroup, npc npc = null)
             {
+                promptNPC = npc;
                 string[] enemies = enemyGroup.Split(',');
                 Random rnd = new Random();
                 int enemyIndex = rnd.Next(0, enemies.Length);
@@ -1147,7 +1163,7 @@ namespace IngameScript
                 actionBar.AddToScreen(tv);
                 if(gameLogic.ContainsKey("StartEncounter")) gameLogic["StartEncounter"].Run();
             }
-            
+            // load an enemy from the scene collection
             string LoadEnemy(string enemy)
             {
                 enemyName = enemy;
@@ -1170,10 +1186,10 @@ namespace IngameScript
                             string[] statParts = stat.Split(':');
                             if (statParts.Length != 2) continue;
                             int value = 0;
-                            if (int.TryParse(statParts[1], out value)) enemyStats.Add(statParts[0], value);
-                            else if (statParts[0] == "pattern") enemyPattern = statParts[1].Split(',');
+                            if (int.TryParse(statParts[1].Trim(), out value)) enemyStats.Add(statParts[0].Trim(), value);
+                            else if (statParts[0].Trim() == "pattern") enemyPattern = statParts[1].Split(',');
                         }
-                        sprite = parts[1];
+                        sprite = parts[1].Trim();
                         break;
                     }
                 }
@@ -1193,7 +1209,7 @@ namespace IngameScript
                             GridInfo.Echo("LoadBattleBack: " + enemyName + " not found");
                             return "";
                         }
-                        sprite = parts[1];
+                        sprite = parts[1].Trim();
                         break;
                     }
                 }
@@ -1210,7 +1226,9 @@ namespace IngameScript
             void DoEnemyTurn()
             {
                 if(!IsInEncounter() || isPlayerTurn || dialogWindow != null) return;
-                isPlayerTurn = true;
+                if(gameLogic.ContainsKey("EnemyTurn")) gameLogic["EnemyTurn"].Run();
+                if (isPlayerTurn) return;
+                //isPlayerTurn = true;
                 if (enemyPattern == null || enemyPattern.Length == 0)
                 {
                     if (gameLogic.ContainsKey("EnemyAttack")) gameLogic["EnemyAttack"].Run();
@@ -1223,6 +1241,13 @@ namespace IngameScript
                     if (gameLogic.ContainsKey(enemyPattern[enemyIndex])) gameLogic[enemyPattern[enemyIndex]].Run();
                     else GridInfo.Echo("EnemyTurn: " + enemyPattern[enemyIndex] + " not found");
                 }
+                StartPlayerTurn();
+            }
+            void StartPlayerTurn()
+            {
+                isPlayerTurn = true;
+                if(gameLogic.ContainsKey("PlayerTurn")) gameLogic["PlayerTurn"].Run();
+                if(!isPlayerTurn) DoEnemyTurn();
             }
             //-------------------------------------------------------------------
         }

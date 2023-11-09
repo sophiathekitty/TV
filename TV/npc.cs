@@ -51,7 +51,8 @@ namespace IngameScript
             }
             public List<GameAction> actions = new List<GameAction>();
             public Dictionary<string,GameAction> yes = new Dictionary<string, GameAction>();
-            public Dictionary<string,GameAction> no = new Dictionary<string, GameAction>(); 
+            public Dictionary<string,GameAction> no = new Dictionary<string, GameAction>();
+            public GameAction encounterWin = null;
             bool randomWalk = false;
             public bool BlocksMovement = true;
             int walkTimer = 0;
@@ -115,6 +116,11 @@ namespace IngameScript
                     {
                         GameAction n = new GameAction(part, this);
                         no.Add(n.Name, n);
+                        //GridInfo.Echo("npc: constructor: no:"+n.Name);
+                    }
+                    else if (part.Contains("encounter:"))
+                    {
+                        encounterWin = new GameAction(part, this); 
                         //GridInfo.Echo("npc: constructor: no:"+n.Name);
                     }
                     // else it's setting a properety
