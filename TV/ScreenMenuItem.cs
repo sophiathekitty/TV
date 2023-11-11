@@ -196,7 +196,7 @@ namespace IngameScript
             }
             public ScreenMenuItem(string label, float width, string defaultValue)
             {
-                GridInfo.Echo("ScreenMenuItem: constructor: " + label + " " + width.ToString() + " " + defaultValue);
+                //GridInfo.Echo("ScreenMenuItem: constructor: " + label + " " + width.ToString() + " " + defaultValue);
                 _postion = new Vector2(0, 0);
                 _width = width;
                 bullet = new ScreenSprite(ScreenSprite.ScreenSpriteAnchor.CenterLeft, _postion, ScreenSprite.DEFAULT_FONT_SIZE, new Vector2(0, 0), Color, "White", bulletIcon, TextAlignment.RIGHT, SpriteType.TEXT);
@@ -241,14 +241,14 @@ namespace IngameScript
             }
             private void DisplayValue(string value)
             {
-                GridInfo.Echo("ScreenMenuItem: DisplayValue: " + value);
+                //GridInfo.Echo("ScreenMenuItem: DisplayValue: " + value);
                 // if the variable is a bool, parse it and set the text to the bool value
                 bool boolValue;
                 if (bool.TryParse(value, out boolValue))
                 {
                     isToggle = true;
                     text.Data = boolValue ? trueValue : falseValue;
-                    GridInfo.Echo("ScreenMenuItem: DisplayValue: bool: " + text.Data);
+                    //GridInfo.Echo("ScreenMenuItem: DisplayValue: bool: " + text.Data);
                 }
                 else
                 {
@@ -290,12 +290,12 @@ namespace IngameScript
             // add to screen
             public void AddToScreen(Screen screen)
             {
-                GridInfo.Echo("ScreenMenuItem: AddToScreen: "+label.Data);
+                //GridInfo.Echo("ScreenMenuItem: AddToScreen: "+label.Data);
                 screen.AddSprite(bullet);
                 screen.AddSprite(label);
                 if (text != null)
                 {
-                    GridInfo.Echo("ScreenMenuItem: AddToScreen: text: "+text.Data);
+                    //GridInfo.Echo("ScreenMenuItem: AddToScreen: text: "+text.Data);
                     screen.AddSprite(text);
                 }
 

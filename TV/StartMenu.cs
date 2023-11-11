@@ -22,15 +22,14 @@ namespace IngameScript
 {
     partial class Program
     {
-        public interface IGameDialog
+        public class StartMenu : ScreenMenu
         {
-            void Say(string dialog);
-            void Go(string map_name, int x, int y);
-            void Ask(string dialog, npc npc, string tag);
-            void Run(string action);
-            int GetPlayerX();
-            int GetPlayerY();
-            void SaveGame();
+            public StartMenu(string title,string save_tag, float width, ScreenActionBar actionBar, bool background = true) : base(title, width, actionBar)
+            {
+                if(background) SetBackgroundColor(Color.Black);
+                for(int i = 1; i < 4; i++) AddLabel(save_tag + " " + i);
+                AddLabel("Quit Game");
+            }
         }
     }
 }

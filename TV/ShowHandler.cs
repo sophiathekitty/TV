@@ -48,7 +48,7 @@ namespace IngameScript
             //public Action<string> OnShowDone;
             public ShowHandler(string show, Action<string> onDone = null)
             {
-                GridInfo.Echo("ShowHandler: constructor: " + show);
+                //GridInfo.Echo("ShowHandler: constructor: " + show);
                 //OnShowDone = onDone;
                 name = show;
                 string[] showData = SceneCollection.GetScene(show, "Main", 0, true).Split('║');

@@ -29,7 +29,7 @@ namespace IngameScript
         {
             List<string> images = new List<string>();
             int index = 0;
-            int delay = 2200;
+            int delay = 300;//2200;
             int currentDelay = 0;
             ScreenSprite sprite;
             ScreenSprite timeOverlay;
@@ -42,14 +42,29 @@ namespace IngameScript
                 sprites.Add(timeOverlay);
 
                 // add images to the list
-                images.Add("LCD_HI_Poster1_Landscape");
-                //images.Add("LCD_HI_Poster2_Landscape");
-                //images.Add("LCD_HI_Poster3_Landscape");
-                //images.Add("LCD_SoF_BrightFuture_Landscape");
-                //images.Add("LCD_SoF_CosmicTeam_Landscape");
-                //images.Add("LCD_SoF_Exploration_Landscape");
-                images.Add("LCD_SoF_SpaceTravel_Landscape");
-                images.Add("LCD_SoF_ThunderFleet_Landscape");
+                List<string> s = new List<string>();
+                GridInfo.Me.GetSurface(0).GetSprites(s);
+                //GridInfo.Echo("Surface Sprite Count: " + s.Count);
+                if (s.Contains("Ambient1"))
+                {
+                    GridInfo.Echo("Ambient1");
+                    sprite.Data = "Ambient1";
+                    for(int i= 1; i <= 16; i++) images.Add("Ambient"+i);
+                    //images.Add("Ambient3");
+                    //images.Add("Ambient6");
+                    //images.Add("Ambient10");
+                    //images.Add("Ambient11");
+                    //images.Add("Ambient12");
+                    //images.Add("Ambient13");
+                    //images.Add("Ambient16");
+                }
+                else
+                {
+                    //GridInfo.Echo("LCD");
+                    images.Add("LCD_HI_Poster1_Landscape");
+                    images.Add("LCD_SoF_SpaceTravel_Landscape");
+                    images.Add("LCD_SoF_ThunderFleet_Landscape");
+                }
             }
             // get the current in game time of day where every 2 hours is 1 day
             DateTime GameTime

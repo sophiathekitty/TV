@@ -303,6 +303,7 @@ namespace IngameScript
                     {
                         // save the game
                         //GridInfo.Echo("GameAction: savegame");
+                        Game.SaveGame();
                     }
                     else if(cmd == "run")
                     {

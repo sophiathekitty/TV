@@ -195,16 +195,6 @@ namespace IngameScript
                 {
                     if(currentShow.IsDone)
                     {
-                        /*
-                        // restart the show
-                        //GridInfo.Echo("TV:Show:Done: " + currentShow.Name);
-                        currentShow.Dispose();
-                        // select a random show
-                        List<string> availableShows = SceneCollection.shows.ToList();
-                        int index = new Random().Next(availableShows.Count);
-                        currentShow = new ShowHandler(availableShows[index], ShowDone);
-                        SetScene(SceneCollection.GetScene(currentShow.Current));
-                        */
                         //GridInfo.Echo("TV:Show:Done: " + currentShow.Name);
                         PlayRandomShow();
                     }
@@ -311,7 +301,7 @@ namespace IngameScript
                         if (SceneCollection.games.Count > 0) GridInfo.Echo("TV:Games:Scene: " + SceneCollection.games[0]);
                         if (SceneCollection.games.Count > 0) game = new GameRPG(SceneCollection.games[0], actionBar);
                         //GridInfo.Echo("TV:Games:GameCreated");
-                        game.LoadMap("throne",2,6);
+                        //game.LoadMap("throne",2,6);
                         //GridInfo.Echo("TV:Games:MapLoaded");
                         game.AddToScreen(this);
                         //GridInfo.Echo("TV:Games:GameAddedToScreen");

@@ -51,6 +51,7 @@
     <Compile Include="GameItemMenu.cs" />
     <Compile Include="GameRPG.cs" />
     <Compile Include="GameSpellMenu.cs" />
+    <Compile Include="GameTitleScreen.cs" />
     <Compile Include="IGameDialog.cs" />
     <Compile Include="IGameEncounters.cs" />
     <Compile Include="IGameInventory.cs" />
@@ -88,6 +89,7 @@
     <Compile Include="ShopMenu.cs" />
     <Compile Include="ShowHandler.cs" />
     <Compile Include="SpriteOptions.cs" />
+    <Compile Include="StartMenu.cs" />
     <Compile Include="Subtitles.cs" />
     <Compile Include="Tilemap.cs" />
     <Compile Include="TilemapExit.cs" />

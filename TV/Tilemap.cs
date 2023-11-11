@@ -208,6 +208,11 @@ namespace IngameScript
                     return ToxicLevel(GameAction.Game.GetPlayerX(), GameAction.Game.GetPlayerY());
                 }
             }
+            public static void Reset()
+            {
+                exits.Clear();
+
+            }
             // is this tile dangerous?
             public static bool IsDanger(int x, int y)
             {
@@ -301,6 +306,7 @@ namespace IngameScript
             {
                 roofMap = null;
                 encounterGroups.Clear();
+                exits.Clear();
                 encounterMap = null;
                 //darkRadius = 1;
                 ////GridInfo.Echo("LoadMap: data: "+data.Length);

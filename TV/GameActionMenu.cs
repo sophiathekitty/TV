@@ -25,7 +25,7 @@ namespace IngameScript
         public class GameActionMenu : ScreenMenu
         {
             List<GameAction> actions;
-            public GameActionMenu(string title, float width, ScreenActionBar actionBar, List<GameAction> actions) : base(title, width, actionBar)
+            public GameActionMenu(string title, float width, ScreenActionBar actionBar, List<GameAction> actions, List<string> baseActions = null) : base(title, width, actionBar)
             {
                 SetBackgroundColor(Color.Black);
                 this.actions = actions;
@@ -33,8 +33,15 @@ namespace IngameScript
                 {
                     AddLabel(action.Name);
                 }
-                AddLabel("Items");
-                AddLabel("Spells");
+                if(baseActions != null)
+                {
+                    foreach (string action in baseActions)
+                    {
+                        AddLabel(action);
+                    }
+                }
+                //AddLabel("Items");
+                //AddLabel("Spells");
                 AddLabel("Quit Game");
             }
             // override input handling

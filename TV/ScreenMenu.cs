@@ -145,7 +145,7 @@ namespace IngameScript
             }
             public void AddLabel(string label, string defaultValue)
             {
-                GridInfo.Echo("AddLabel: " + label + ": " + defaultValue);
+                //GridInfo.Echo("AddLabel: " + label + ": " + defaultValue);
                 menuItems.Add(new ScreenMenuItem(label, _width, defaultValue));
             }
             //

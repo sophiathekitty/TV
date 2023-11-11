@@ -103,6 +103,22 @@ namespace IngameScript
                 }
                 return "";
             }
+            // save a scene at an address
+            public static bool SaveScene(string address, string data)
+            {
+                //GridInfo.Echo("SceneCollection: SaveScene(" + address + ")");
+                SceneAddress sceneAddress = new SceneAddress(address);
+                if (scenes.ContainsKey(sceneAddress.show) && scenes[sceneAddress.show].ContainsKey(sceneAddress.scene))
+                {
+                    if (sceneAddress.index >= 0 && sceneAddress.index < scenes[sceneAddress.show][sceneAddress.scene].Count)
+                    {
+                        if (sceneAddress.custom_data) scenes[sceneAddress.show][sceneAddress.scene][sceneAddress.index].CustomData = data;
+                        else scenes[sceneAddress.show][sceneAddress.scene][sceneAddress.index].WriteText(data);
+                        return true;
+                    }
+                }
+                return false;
+            }
             // get the scene from an address (show.scene.index.CustomeData or show.scene.index.Text)
             public static string GetScene(string address)
             {

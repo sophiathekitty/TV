@@ -1,4 +1,5 @@
 ﻿using Sandbox.Game.EntityComponents;
+using Sandbox.Game.GUI.DebugInputComponents;
 using Sandbox.ModAPI.Ingame;
 using Sandbox.ModAPI.Interfaces;
 using SpaceEngineers.Game.ModAPI.Ingame;
@@ -37,6 +38,9 @@ namespace IngameScript
             npc promptNPC = null;
             string promptTag = "";
             string name;
+            string title;
+            string save_tag = "Game";
+            int saveId = 0;
             Tilemap map;
             int playerX = 0;
             int playerY = 0;
@@ -67,6 +71,8 @@ namespace IngameScript
             //string playerHP = "hp";
             Screen tv;
             ScreenActionBar actionBar;
+            // game ui stuff
+            GameTitleScreen gameTitleScreen;
             GameActionMenu gameActionMenu;
             GameItemMenu gameItemMenu;
             ShopMenu shopMenu;
@@ -75,7 +81,9 @@ namespace IngameScript
             DialogWindow dialogWindow;
             string controls = "< v ^ > Menu";
             string NothingToSell = "You have nothing to sell.";
+            List<string> systemActions = new List<string>() { "Items", "Spells" };
             // get a subset of the item library
+            /*
             Dictionary<string, Dictionary<string, string>> ItemsOfType(string type)
             {
                 Dictionary<string, Dictionary<string, string>> items = new Dictionary<string, Dictionary<string, string>>();
@@ -85,11 +93,13 @@ namespace IngameScript
                 }
                 return items;
             }
+            */
             //-------------------------------------------------------------------
             // load a game from a string
             //-------------------------------------------------------------------
             public GameRPG(string game, ScreenActionBar actionBar)
             {
+                /*
                 playerGear.Clear();
                 playerInventory.Clear();
                 playerStats.Clear();
@@ -100,10 +110,12 @@ namespace IngameScript
                 maps.Clear();
                 itemStats.Clear();
                 gameLogic.Clear();
+                */
+                Tilemap.Reset();
                 AnimatedCharacter.CharacterLibrary.Clear();
                 //GridInfo.Echo("Loading game: " + game);
                 this.actionBar = actionBar;
-                actionBar.SetActions(controls);
+                //actionBar.SetActions(controls);
                 name = game;
                 string element = SceneCollection.GetScene(game + ".Main.0.CustomData");
                 string[] parts = element.Split('║');
@@ -118,6 +130,9 @@ namespace IngameScript
                 loadGraphics();                
                 loadMapsList();
                 player = new AnimatedCharacter(AnimatedCharacter.CharacterLibrary["player"]);
+                player.Position = new Vector2(-100, -100); // hide player for now.
+                gameTitleScreen = new GameTitleScreen(title,name,save_tag, 300, actionBar, SceneCollection.GetScene(game + ".Title.0.CustomData"));
+                actionBar.SetActions(gameTitleScreen.MenuAction);
                 //Say = ShowDialog;
                 //Ask = ShowDialogPrompt;
                 //Go = LoadMap;
@@ -137,6 +152,7 @@ namespace IngameScript
                 {
                     string[] pair = var.Split(':');
                     if (pair[0].Trim() == "name") name = pair[1].Trim();
+                    else if (pair[0].Trim() == "title") title = pair[1].Trim();
                 }
             }
             // parse player info (create the default player)
@@ -149,15 +165,35 @@ namespace IngameScript
                 if(parts.Length > 3) parsePlayerLocation(parts[3].Trim());
             }
             // parse player stats
-            void parsePlayerStats(string data)
+            void parsePlayerStats(string data, string maxData = "")
             {
                 //GridInfo.Echo("parsePlayerStats:");
                 string[] parts = data.Split(',');
                 foreach(string part in parts)
                 {
                     string[] pair = part.Split(':');
-                    playerStats.Add(pair[0].Trim(), int.Parse(pair[1].Trim()));
-                    playerMaxStats.Add(pair[0].Trim(), int.Parse(pair[1].Trim()));
+                    string stat_name = pair[0].Trim();
+                    string stat_value = pair[1].Trim();
+                    GridInfo.Echo("parsePlayerStats: " + stat_name + " = " + stat_value);
+                    // stat...
+                    if (playerStats.ContainsKey(stat_name)) playerStats[stat_name] = int.Parse(stat_value);
+                    else playerStats.Add(stat_name, int.Parse(stat_value));
+                    // max stat...
+                    if(maxData == "")
+                    {
+                        if (playerMaxStats.ContainsKey(stat_name)) playerMaxStats[stat_name] = int.Parse(stat_value);
+                        else playerMaxStats.Add(stat_name, int.Parse(stat_value));
+                    }
+                }
+                if(maxData != "")
+                {
+                    parts = maxData.Split(',');
+                    foreach (string part in parts)
+                    {
+                        string[] pair = part.Split(':');
+                        playerMaxStats[pair[0].Trim()] = int.Parse(pair[1].Trim());
+                        GridInfo.Echo("parsePlayerStats: " + pair[0].Trim() + " = " + pair[1].Trim());
+                    }
                 }
             }
             // parse player gear
@@ -168,8 +204,22 @@ namespace IngameScript
                 foreach(string part in parts)
                 {
                     string[] pair = part.Split(':');
-                    playerGear.Add(pair[0].Trim(), pair[1].Trim());
+                    if (playerGear.ContainsKey(pair[0].Trim())) playerGear[pair[0].Trim()] = pair[1].Trim();
+                    else playerGear.Add(pair[0].Trim(), pair[1].Trim());
+                    //playerGear.Add(pair[0].Trim(), pair[1].Trim());
                     if (!playerInventory.ContainsKey(pair[1].Trim())) playerInventory.Add(pair[1].Trim(), 1);
+                }
+            }
+            // parse player inventory
+            void parsePlayerInventory(string data)
+            {
+                string[] parts = data.Split(',');
+                foreach(string part in parts)
+                {
+                    string[] pair = part.Split(':');
+                    if (pair.Length != 2) continue;
+                    if (!playerInventory.ContainsKey(pair[0].Trim())) playerInventory.Add(pair[0].Trim(), int.Parse(pair[1].Trim()));
+                    else playerInventory[pair[0].Trim()] = int.Parse(pair[1].Trim());
                 }
             }
             // parse player location
@@ -287,30 +337,139 @@ namespace IngameScript
                     }
                 }
             }
+            // parse bools
+            void parseBools(string data)
+            {
+                GridInfo.Echo("parseBools:1: " + data);
+                string[] vars = data.Split(',');
+                foreach(string var in vars)
+                {
+                    GridInfo.Echo("parseBools:2: " + var);
+                    string[] pair = var.Split(':');
+                    if (pair.Length != 2) continue;
+                    GridInfo.Echo("parseBools:3: " + pair[0].Trim() + " = " + pair[1].Trim());
+                    gameBools.Add(pair[0].Trim(), bool.Parse(pair[1].Trim()));
+                }
+            }
+            // parse ints
+            void parseInts(string data)
+            {
+                GridInfo.Echo("parseInts:1: " + data);
+                string[] vars = data.Split(',');
+                foreach (string var in vars)
+                {
+                    GridInfo.Echo("parseInts:2: " + var);
+                    string[] pair = var.Split(':');
+                    if (pair.Length != 2) continue;
+                    GridInfo.Echo("parseInts:3: " + pair[0].Trim() + " = " + pair[1].Trim());
+                    gameInts.Add(pair[0].Trim(), int.Parse(pair[1].Trim()));
+                }
+            }
             //-------------------------------------------------------------------
             // load a game save
             // note: i haven't figured out what the save string looks like yet
             //-------------------------------------------------------------------
             public void LoadGameSave(string save)
             {
-                string[] parts = save.Split('║');
-                foreach(string part in parts)
-                {
-                    if (part.Contains("type:player")) parsePlayer(part);
-                }
+                playerGear.Clear();
+                playerInventory.Clear();
+                playerStats.Clear();
+                playerMaxStats.Clear();
+
+                string[] parts = save.Split('═');
+                if (parts.Length < 8) return;
+                parsePlayerStats(parts[1], parts[2]);
+                parsePlayerGear(parts[3]);
+                parsePlayerInventory(parts[4]);
+                parsePlayerLocation(parts[5]);
+                parseBools(parts[6]);
+                parseInts(parts[7]);
+                LoadMap(currentMap, playerX, playerY);
+                //LoadMap(currentMap, playerX, playerY);
+                actionBar.SetActions(controls);
             }
-            bool firstLoadMap = true;
+            public void SaveGame()
+            {
+                string game_saves = SceneCollection.GetScene(name + ".Main.0.Text");
+                string[] save_data = game_saves.Split('║');
+                if (saveId <= 0 || saveId >= save_data.Length) return;
+                save_data[saveId] = GetSaveData();
+                game_saves = "";
+                bool first = true;
+                foreach(string save in save_data)
+                {
+                    if (first) first = false;
+                    else game_saves += "║";
+                    game_saves += save;
+                }
+                SceneCollection.SaveScene(name + ".Main.0.Text", game_saves);
+            }
+            string GetSaveData()
+            {
+                string save = "save:Log "+saveId+ "═";
+                bool first = true;
+                foreach(var stat in playerStats)
+                {
+                    if (first) first = false;
+                    else save += ",";
+                    save += stat.Key + ":" + stat.Value;
+                }
+                save += "═";
+                first = true;
+                foreach (var stat in playerMaxStats)
+                {
+                    if (first) first = false;
+                    else save += ",";
+                    save += stat.Key + ":" + stat.Value;
+                }
+                save += "═";
+                first = true;
+                foreach (var gear in playerGear)
+                {
+                    if (first) first = false;
+                    else save += ",";
+                    save += gear.Key + ":" + gear.Value;
+                }
+                save += "═";
+                first = true;
+                foreach (var item in playerInventory)
+                {
+                    if (first) first = false;
+                    else save += ",";
+                    save += item.Key + ":" + item.Value;
+                }
+                save += "═";
+                save += "map:" + currentMap + ",x:" + playerX + ",y:" + playerY;
+                save += "═";
+                first = true;
+                foreach (var gameBool in gameBools)
+                {
+                    if (first) first = false;
+                    else save += ",";
+                    save += gameBool.Key + ":" + gameBool.Value;
+                }
+                save += "═";
+                first = true;
+                foreach (var gameInt in gameInts)
+                {
+                    if (first) first = false;
+                    else save += ",";
+                    save += gameInt.Key + ":" + gameInt.Value;
+                }
+                return save;
+            }
             //-------------------------------------------------------------------
             //
             // load a map
             //
             //-------------------------------------------------------------------
+            bool firstLoadMap = false;
             public void LoadMap(string map_name, int x, int y)
             {
                 CloseDialog();
                 //GridInfo.Echo("LoadMap: " + map_name);
                 if (!maps.ContainsKey(map_name)) return;
-                currentMap = map_name;
+                //currentMap = map_name;
                 //GridInfo.Echo("map address: " + maps[map_name]);
                 if (!firstLoadMap)
                 {
@@ -339,6 +498,7 @@ namespace IngameScript
             public void AddToScreen(Screen screen)
             {
                 tv = screen;
+                gameTitleScreen.AddToScreen(screen);
                 map.AddToScreen(screen);
                 screen.AddSprite(player);
                 map.AddOverlayToScreen(screen);
@@ -348,6 +508,15 @@ namespace IngameScript
             {
                 map.RemoveFromScreen(screen);
                 screen.RemoveSprite(player);
+                if(gameTitleScreen != null) gameTitleScreen.RemoveFromScreen(screen);
+                if(gameActionMenu != null) gameActionMenu.RemoveFromScreen(screen);
+                if(gameItemMenu != null) gameItemMenu.RemoveFromScreen(screen);
+                if(gameSpellMenu != null) gameSpellMenu.RemoveFromScreen(screen);
+                if(playerStatsWindow != null) playerStatsWindow.RemoveFromScreen(screen);
+                if(dialogWindow != null) dialogWindow.RemoveFromScreen(screen);
+                if(shopMenu != null) shopMenu.RemoveFromScreen(screen);
+                if(battleMenu != null) battleMenu.RemoveFromScreen(screen);
+                if(battleWindow != null) battleWindow.RemoveFromScreen(screen);
             }
             //-------------------------------------------------------------------
             //
@@ -387,11 +556,25 @@ namespace IngameScript
                 return dialog;
             }
             //-------------------------------------------------------------------
-            //
+            //-------------------------------------------------------------------
+            //-------------------------------------------------------------------
+            //-------------------------------------------------------------------
+            //-------------------------------------------------------------------
+            //-------------------------------------------------------------------
+            //-------------------------------------------------------------------
+            //-------------------------------------------------------------------
+            //-------------------------------------------------------------------
             //
             // handle input
             //
-            //
+            //-------------------------------------------------------------------
+            //-------------------------------------------------------------------
+            //-------------------------------------------------------------------
+            //-------------------------------------------------------------------
+            //-------------------------------------------------------------------
+            //-------------------------------------------------------------------
+            //-------------------------------------------------------------------
+            //-------------------------------------------------------------------
             //-------------------------------------------------------------------
             public string HandleInput(string input)
             {
@@ -402,6 +585,7 @@ namespace IngameScript
                 else if (shopMenu != null) action = shopMenu.HandleInput(input);
                 else if (gameItemMenu != null) action = gameItemMenu.HandleInput(input);
                 else if (battleMenu != null) action = battleMenu.HandleInput(input);
+                else if (gameTitleScreen != null) action = gameTitleScreen.HandleInput(input);
                 else if (gameActionMenu == null) action = actionBar.HandleInput(input);
                 else action = gameActionMenu.HandleInput(input);
                 //GridInfo.Echo("game: input: " +input+ " -> action: " + action);
@@ -428,7 +612,7 @@ namespace IngameScript
                 }
                 else if(action == "menu")
                 {
-                    gameActionMenu = new GameActionMenu("Menu", 255, actionBar, GetNPCActions());
+                    gameActionMenu = new GameActionMenu("Menu", 255, actionBar, GetNPCActions(),systemActions);
                     gameActionMenu.AddToScreen(tv);
                     playerStatsWindow = new PlayerStatsWindow(playerStats, 155);
                     playerStatsWindow.AddToScreen(tv);
@@ -443,6 +627,16 @@ namespace IngameScript
                     else if (battleMenu != null) return "";
                     else CloseMenu();
                     return "";
+                }
+                else if (action.StartsWith(save_tag.ToLower()) && gameTitleScreen != null)
+                {
+                    int.TryParse(action.Replace(save_tag.ToLower(), "").Trim(), out saveId);
+                    string game_saves = SceneCollection.GetScene(name + ".Main.0.Text");
+                    string[] save_data = game_saves.Split('║');
+                    if(saveId <= 0 || saveId >= save_data.Length) return "";                    
+                    LoadGameSave(save_data[saveId]);
+                    gameTitleScreen.RemoveFromScreen(tv);
+                    gameTitleScreen = null;
                 }
                 else if(action == "close")
                 {

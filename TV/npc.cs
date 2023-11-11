@@ -85,6 +85,7 @@ namespace IngameScript
             public npc(string character, string[] parts) : base(AnimatedCharacter.CharacterLibrary[character])
             {
                 //GridInfo.Echo("npc: constructor: " + character);
+                
                 foreach (string part in parts)
                 {
                     if (part.Contains("type:npc"))
@@ -93,12 +94,12 @@ namespace IngameScript
                         foreach (string var in info)
                         {
                             string[] pair = var.Split(':');
-                            if (pair[0] == "x") X = int.Parse(pair[1]);
-                            else if (pair[0] == "y") Y = int.Parse(pair[1]);
-                            else if (pair[0] == "walk") randomWalk = bool.Parse(pair[1]);
-                            else if (pair[0] == "direction") SetDirection(pair[1]);
-                            else if (pair[0] == "blocks") BlocksMovement = bool.Parse(pair[1]);
-                            else if (pair[0] == "visible") NPCVisible = bool.Parse(pair[1]);
+                            if (pair[0].Trim() == "x") X = int.Parse(pair[1].Trim());
+                            else if (pair[0].Trim() == "y") Y = int.Parse(pair[1].Trim());
+                            else if (pair[0].Trim() == "walk") randomWalk = bool.Parse(pair[1].Trim());
+                            else if (pair[0].Trim() == "direction") Direction = pair[1].Trim();//SetDirection(pair[1]);
+                            else if (pair[0].Trim() == "blocks") BlocksMovement = bool.Parse(pair[1].Trim());
+                            else if (pair[0].Trim() == "visible") NPCVisible = bool.Parse(pair[1].Trim());
                         }
                     }
                     else if (part.Contains("action:"))
@@ -134,7 +135,8 @@ namespace IngameScript
                         //GridInfo.Echo("npc: constructor: visible: "+Visible);
                     }
                 }
-                SetDirection("down");
+                SetDirection(Direction);
+                //SetDirection("down");
             }
             public void FacePlayer(AnimatedCharacter player)
             {

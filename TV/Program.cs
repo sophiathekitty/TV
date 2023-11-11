@@ -44,8 +44,7 @@ namespace IngameScript
         public void Main(string argument, UpdateType updateSource)
         {
             if (argument != "") tv.HandleInput(argument);
-            else if (GridBlocks.Couch.IsUnderControl) tv.Play();
-            else if (GridBlocks.Keyboard.IsUnderControl) tv.Play();
+            else if (GridBlocks.Couch.IsUnderControl || GridBlocks.Keyboard.IsUnderControl) tv.Play();
             else tv.Idle();
         }
         //=======================================================================
