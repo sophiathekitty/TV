@@ -50,6 +50,7 @@
     <Compile Include="GameItem.cs" />
     <Compile Include="GameItemMenu.cs" />
     <Compile Include="GameRPG.cs" />
+    <Compile Include="GamesMenu.cs" />
     <Compile Include="GameSpellMenu.cs" />
     <Compile Include="GameTitleScreen.cs" />
     <Compile Include="IGameDialog.cs" />

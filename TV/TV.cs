@@ -29,6 +29,10 @@ namespace IngameScript
         //----------------------------------------------------------------------
         public class TV : Screen
         {
+            public static Action<string> PlayMusic;
+            public static Action StopMusic;
+            public static Action<string> LaunchGame;
+            IMySoundBlock tvSound;
             GameRPG game;
             ScreenScene currentScene;
             AnimatedSceneEditor editor;
@@ -47,6 +51,10 @@ namespace IngameScript
             //
             public TV() : base(GridBlocks.TV)
             {
+                PlayMusic = PlaySound;
+                StopMusic = StopSound;
+                LaunchGame = PlayGame;
+                tvSound = GridBlocks.TVSound;
                 // setup show
                 List<string> availableShows = SceneCollection.shows.ToList();
 
@@ -80,6 +88,45 @@ namespace IngameScript
                 // setup menus
                 actionBar = new ScreenActionBar(5, Size.X, Color.White, "Up Down Select  Back");
                 menus = new TVMenus(this, actionBar);
+            }
+            void PlaySound(string sound)
+            {
+                GridInfo.Echo("TV:PlaySound: " + sound);
+                if(tvSound == null) return;
+                List<string> sounds = new List<string>();
+                tvSound.GetSounds(sounds);
+                GridInfo.Echo("TV:PlaySound: " + sounds.Count);
+                if (sounds.Contains(sound))
+                {
+                    GridInfo.Echo("TV:PlaySound:found: " + sound);
+                    tvSound.LoopPeriod = 300;
+                    tvSound.SelectedSound = sound;
+                    tvSound.Play();
+                    tvSound.ApplyAction("PlaySound");
+                }
+                else StopSound();
+            }
+            void StopSound() { 
+                GridInfo.Echo("TV:StopSound");
+                if (tvSound == null) return;
+                tvSound.Stop();
+                tvSound.ApplyAction("StopSound");
+                GridInfo.Echo("TV:StopSound:Done");
+            }
+            void PlayGame(string gameName)
+            {
+                //GridInfo.Echo("TV:Games");
+                if (currentScene != null) currentScene.RemoveFromScreen(this);
+                //GridInfo.Echo("TV:Games:SceneRemoved");
+                if (currentShow != null) currentShow.Dispose();
+                //GridInfo.Echo("TV:Games:ShowDisposed");
+                currentShow = null;
+                menus.Hide();
+                // for now we're going to load the first game in the games list to see if it works
+                game = new GameRPG(gameName, actionBar);
+                game.AddToScreen(this);
+                //GridInfo.Echo("TV:Games:GameAddedToScreen");
+                game.Update();
             }
             // hand show done event
             void ShowDone(string show)
@@ -219,6 +266,7 @@ namespace IngameScript
                     menus.SetMenu("main");
                     menus.Hide();
                     actionBar.RemoveFromScreen(this);
+                    StopSound();
                 }
                 else
                 {
@@ -310,14 +358,25 @@ namespace IngameScript
                     }
                     else if(action == "quit game")
                     {
+                        GridInfo.Echo("TV:0:QuitGame");
+                        StopSound();
+                        GridInfo.Echo("TV:1:StopSound");
                         game.RemoveFromScreen(this);
+                        GridInfo.Echo("TV:2:GameRemovedFromScreen");
                         game = null;
+                        GridInfo.Echo("TV:3:GameDisposed");
                         actionBar.RemoveFromScreen(this);
+                        GridInfo.Echo("TV:4:ActionBarRemovedFromScreen");
                         menus.Hide();
+                        GridInfo.Echo("TV:5:MenusHidden");
                         barVisible = false;
+                        GridInfo.Echo("TV:6:BarHidden");
                         menuVisible = false;
+                        GridInfo.Echo("TV:7:MenuHidden");
                         barTimeout = 0;
+                        GridInfo.Echo("TV:8:BarTimeoutReset");
                         PlayRandomShow();
+                        GridInfo.Echo("TV:9:PlayRandomShow");
                         return "";
                     }
                     return action;

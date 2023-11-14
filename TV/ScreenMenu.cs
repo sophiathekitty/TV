@@ -31,11 +31,12 @@ namespace IngameScript
             ScreenSprite title;
             public List<ScreenMenuItem> menuItems = new List<ScreenMenuItem>();
             int selectedIndex = 0;
+            public int Selected { get { return selectedIndex; } }
             public float ItemHeight = 30f;
             public float ItemIndent = 20f;
             float _width = 100f;
             float headerHeight = 1.2f;
-            ScreenActionBar actionBar;
+            public ScreenActionBar actionBar;
             public bool handleEditing = true;
             public bool lowerCaseActions = true;
             public string menuScrollActions
@@ -175,7 +176,7 @@ namespace IngameScript
             //
             // add to screen
             //
-            public void AddToScreen(Screen screen)
+            public virtual void AddToScreen(Screen screen)
             {
                 Vector2 position = new Vector2(ItemIndent, Height / -2);
                 if(back != null)
@@ -199,7 +200,7 @@ namespace IngameScript
             //
             // remove from screen
             //
-            public void RemoveFromScreen(Screen screen)
+            public virtual void RemoveFromScreen(Screen screen)
             {
                 screen.RemoveSprite(back);
                 screen.RemoveSprite(title);

@@ -64,6 +64,8 @@ namespace IngameScript
             string spellsLevel = "level";
             string spellsCost = "mp";
             string spellsBattle = "combat";
+            string titleMusic = "";
+            string battleMusic = "";
             BattleMenu battleMenu;
             BattleWindow battleWindow;
             bool isPlayerTurn = true;
@@ -99,18 +101,6 @@ namespace IngameScript
             //-------------------------------------------------------------------
             public GameRPG(string game, ScreenActionBar actionBar)
             {
-                /*
-                playerGear.Clear();
-                playerInventory.Clear();
-                playerStats.Clear();
-                playerMaxStats.Clear();
-                enemyStats.Clear();
-                gameBools.Clear();
-                gameInts.Clear();
-                maps.Clear();
-                itemStats.Clear();
-                gameLogic.Clear();
-                */
                 Tilemap.Reset();
                 AnimatedCharacter.CharacterLibrary.Clear();
                 //GridInfo.Echo("Loading game: " + game);
@@ -133,15 +123,14 @@ namespace IngameScript
                 player.Position = new Vector2(-100, -100); // hide player for now.
                 gameTitleScreen = new GameTitleScreen(title,name,save_tag, 300, actionBar, SceneCollection.GetScene(game + ".Title.0.CustomData"));
                 actionBar.SetActions(gameTitleScreen.MenuAction);
-                //Say = ShowDialog;
-                //Ask = ShowDialogPrompt;
-                //Go = LoadMap;
                 GameAction.GameVars = this;
                 GameAction.GameShop = this;
                 GameAction.Game = this;
                 GameAction.GameInventory = this;
                 GameAction.GameSpells = this;
                 GameAction.GameEncounters = this;
+                if(titleMusic != "") TV.PlayMusic(titleMusic);
+                GridInfo.Echo("GameRPG: " + name + " loaded");
             }
             // parse game info
             void parseInfo(string data)
@@ -153,6 +142,12 @@ namespace IngameScript
                     string[] pair = var.Split(':');
                     if (pair[0].Trim() == "name") name = pair[1].Trim();
                     else if (pair[0].Trim() == "title") title = pair[1].Trim();
+                    else if (pair[0].Trim() == "battleMusic") battleMusic = pair[1].Trim();
+                    else if (pair[0].Trim() == "titleMusic") titleMusic = pair[1].Trim();
+                    else if (pair[0].Trim() == "spellsLevel") spellsLevel = pair[1].Trim();
+                    else if (pair[0].Trim() == "spellsCost") spellsCost = pair[1].Trim();
+                    else if (pair[0].Trim() == "spellsBattle") spellsBattle = pair[1].Trim();
+                    else if (pair[0].Trim() == "save_tag") save_tag = pair[1].Trim();
                 }
             }
             // parse player info (create the default player)
@@ -491,6 +486,7 @@ namespace IngameScript
                 //GridInfo.Echo("player position: ("+ playerX+", "+ playerY+ ") " + player.Position);
                 firstLoadMap = false;
                 Tilemap.name = map_name;
+                if(Tilemap.music != "") TV.PlayMusic(Tilemap.music);
             }
             //-------------------------------------------------------------------
             // add to screen
@@ -498,10 +494,19 @@ namespace IngameScript
             public void AddToScreen(Screen screen)
             {
                 tv = screen;
-                gameTitleScreen.AddToScreen(screen);
+                GridInfo.Echo("game: add to screen");
+                actionBar.RemoveFromScreen(screen);
+                GridInfo.Echo("game: add to screen: actionBar removed");
                 map.AddToScreen(screen);
+                GridInfo.Echo("game: add to screen: map added");
                 screen.AddSprite(player);
+                GridInfo.Echo("game: add to screen: player added");
                 map.AddOverlayToScreen(screen);
+                GridInfo.Echo("game: add to screen: map overlay added");
+                gameTitleScreen.AddToScreen(screen);
+                GridInfo.Echo("game: add to screen: title screen added");
+                actionBar.AddToScreen(screen);
+                GridInfo.Echo("game: add to screen: actionBar added");
             }
             // remove from screen
             public void RemoveFromScreen(Screen screen)
@@ -678,6 +683,7 @@ namespace IngameScript
                                 GridInfo.Echo("encounterWin: " + promptNPC.encounterWin.Name);
                                 promptNPC.encounterWin.Run();
                             }
+                            if(Tilemap.music != "") TV.PlayMusic(Tilemap.music);
                         } else actionBar.SetActions(battleMenu.menuScrollActions);
                         //GridInfo.Echo("close... battleMenu not null: "+battleMenu.menuScrollActions);
                         return "";
@@ -725,6 +731,11 @@ namespace IngameScript
                     else GridInfo.Echo("PlayerAttack not found");
                     isPlayerTurn = false;
                     return "";
+                }
+                else if(action == "run")
+                {
+                    if(gameLogic.ContainsKey("PlayerRun")) gameLogic["PlayerRun"].Run();
+                    else GridInfo.Echo("PlayerRun not found");
                 }
                 else if(action == "turn done")
                 {
@@ -1339,6 +1350,7 @@ namespace IngameScript
                     GridInfo.Echo("StartEncounter: " + enemies[enemyIndex] + " not found");
                     return;
                 }
+                if(battleMusic != "") TV.PlayMusic(battleMusic);
                 battleWindow = new BattleWindow(battleBack, enemy, enemyStats["x"], enemyStats["y"]);
                 battleWindow.AddToScreen(tv);
                 battleMenu = new BattleMenu("Combat",160, actionBar);

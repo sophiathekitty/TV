@@ -43,6 +43,7 @@ namespace IngameScript
             string groundTiles = "";
             static string toxicTiles = "";
             static string dangerTiles = "";
+            public static string music = "";
             string counterTiles = ""; // can get actions through these...
             char roofTile = ' ';
             char darkTile = ' ';
@@ -211,7 +212,9 @@ namespace IngameScript
             public static void Reset()
             {
                 exits.Clear();
-
+                tileMap = null;
+                encounterMap = null;
+                encounterGroups.Clear();
             }
             // is this tile dangerous?
             public static bool IsDanger(int x, int y)
@@ -321,7 +324,7 @@ namespace IngameScript
                         string[] map_parts = part.Split('═');
                         if(map_parts.Length != 2) return;
                         dark = map_parts[0].Contains("dark");
-                        string[] lines = map_parts[1].Split('\n');
+                        string[] lines = map_parts[1].Trim().Split('\n');
                         mapHeight = lines.Length;
                         if (mapHeight == 0) return;
                         mapWidth = lines[0].Length;
@@ -353,6 +356,12 @@ namespace IngameScript
                         // load an exit
                         exits.Add(new TilemapExit(part));
                     }
+                    else if (part.StartsWith("type:music"))
+                    {
+                        // load an exit
+                        string[] music_parts = part.Split('═');
+                        music = music_parts[1];
+                    }
                     else if (part.StartsWith("type:encounters"))
                     {
                         //GridInfo.Echo("LoadMap: encounters:0: " + part.Length);
@@ -380,7 +389,7 @@ namespace IngameScript
                         //GridInfo.Echo("LoadMap: encounterMap: " + part.Length);
                         string[] enc = part.Split('═');
                         if (enc.Length != 2) continue;
-                        encounterMap = enc[1].Split('\n');
+                        encounterMap = enc[1].Trim().Split('\n');
                     }
                 }
             }
@@ -453,17 +462,27 @@ namespace IngameScript
             public void AddToScreen(Screen screen)
             {
                 if (screen == null) return;
+                GridInfo.Echo("AddToScreen:0: " + visibleTiles.Count);
                 // clear out the old sprites
                 foreach(ScreenSprite sprite in visibleTiles)
                 {
                     screen.RemoveSprite(sprite);
                 }
+                foreach(ScreenSprite sprite in overlayTiles)
+                {
+                    screen.RemoveSprite(sprite);
+                }
+                GridInfo.Echo("AddToScreen:1: " + visibleTiles.Count);
                 visibleTiles.Clear();
+                GridInfo.Echo("AddToScreen:2: " + visibleTiles.Count);
                 overlayTiles.Clear();
+                GridInfo.Echo("AddToScreen:3: " + visibleTiles.Count);
                 // setup the screen sprites
                 // we need to space them out evenly on the screen
                 Vector2 tileSize = TileSize;//new Vector2(screenWidth / viewPortWidth, screenHeight / viewPortHeight);
                 Vector2 tilePos = new Vector2(0, 0);
+                GridInfo.Echo("AddToScreen:4: " + tileSize.ToString());
+                if(tileMap == null) return;
                 for(int y = 0; y < viewPortHeight; y++)
                 {
                     for(int x = 0; x < viewPortWidth; x++)
@@ -482,7 +501,7 @@ namespace IngameScript
                     tilePos.X = 0;
                     tilePos.Y += tileSize.Y;
                 }
-                //GridInfo.Echo("AddToScreen: " + visibleTiles.Count);
+                GridInfo.Echo("AddToScreen:5: " + visibleTiles.Count);
                 // add npcs to screen
                 foreach(npc npc in npcs)
                 {
@@ -497,6 +516,7 @@ namespace IngameScript
                     //npc.RotationOrScale = 0.5f;
                     //GridInfo.Echo("npc: added "+npc.RotationOrScale);
                 }
+                GridInfo.Echo("AddToScreen:6: " + npcs.Count);
             }
             public void AddOverlayToScreen(Screen screen)
             {

@@ -278,25 +278,16 @@ namespace IngameScript
                     }
                     else if(cmd == "go")
                     {
-                        string map;
-                        int x;
-                        int y;
                         if (param.Contains(','))
                         {
                             string[] props = param.Split(',');
-                            map = props[0];
-                            x = int.Parse(props[1]);
-                            y = int.Parse(props[2]);
-                            Game.Go(map, x, y);
+                            Game.Go(props[0], int.Parse(props[1]), int.Parse(props[2]));
                         }
                         else if(param == "map.Exit")
                         {
                             TilemapExit exit = Tilemap.Exit;
                             if (exit == null) continue;
-                            map = exit.Map;
-                            x = exit.X;
-                            y = exit.Y;
-                            Game.Go(map, x, y);
+                            Game.Go(exit.Map, exit.MapX, exit.MapY);
                         }
                     }
                     else if(cmd == "savegame")

@@ -1,4 +1,5 @@
-﻿using Sandbox.Game.EntityComponents;
+﻿using EmptyKeys.UserInterface.Generated.EditFactionIconView_Bindings;
+using Sandbox.Game.EntityComponents;
 using Sandbox.ModAPI.Ingame;
 using Sandbox.ModAPI.Interfaces;
 using SpaceEngineers.Game.ModAPI.Ingame;
@@ -28,6 +29,7 @@ namespace IngameScript
             static List<IMyShipController> seats = new List<IMyShipController>();
             static Dictionary<string,IMyTerminalBlock> surfaceProviders = new Dictionary<string,IMyTerminalBlock>();
             public static Dictionary<string,List<IMyTextSurface>> surfaces = new Dictionary<string,List<IMyTextSurface>>();
+            static List<IMySoundBlock> soundBlocks = new List<IMySoundBlock>();
             static void GetBlocks()
             {
                 GridInfo.GridTerminalSystem.GetBlocksOfType<IMyShipController>(seats, b => b.IsSameConstructAs(GridInfo.Me));
@@ -61,6 +63,7 @@ namespace IngameScript
                         }
                     }
                 }
+                GridInfo.GridTerminalSystem.GetBlocksOfType<IMySoundBlock>(soundBlocks, b => b.IsSameConstructAs(GridInfo.Me));
             }
             public static List<IMyTextPanel> Database
             {
@@ -85,6 +88,21 @@ namespace IngameScript
                     foreach(var surface in surfaces)
                     {
                         if(surface.Key.Contains("TV")) return surface.Value[0];
+                    }
+                    return null;
+                }
+            }
+            public static IMySoundBlock TVSound
+            {
+                get
+                {
+                    if (soundBlocks.Count == 0)
+                    {
+                        GetBlocks();
+                    }
+                    foreach (var sound in soundBlocks)
+                    {
+                        if (sound.CustomName.ToLower().Contains("tv")) return sound;
                     }
                     return null;
                 }

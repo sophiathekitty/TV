@@ -40,6 +40,7 @@ namespace IngameScript
                 menus.Add("main", new MainMenu(actionBar));
                 menus.Add("sprite editor", new AnimatedSpriteEditMenu(width, actionBar));
                 menus.Add("options", new OptionMenu(width, actionBar));
+                menus.Add("games", new GamesMenu(width, actionBar));
             }
             // handle input
             public string HandleInput(string input)

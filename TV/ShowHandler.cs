@@ -32,6 +32,7 @@ namespace IngameScript
             int index = 0;
             string name = "";
             string title = "";
+            string music = "";
             public string Name { get { return name; } }
             public string Current { get { return name+"."+playlist[index]; } }
             public string Next()
@@ -59,6 +60,8 @@ namespace IngameScript
                     else if (s.Contains("type:segment")) builder.AddSegment(s);
                 }
                 playlist = builder.BuildPlaylist();
+                if(music != "") TV.PlayMusic(music);
+                else TV.StopMusic();
             }
             // parse show data from string (type:show,title:The Show Name,name:showname)
             void ParseShowData(string showData)
@@ -68,6 +71,8 @@ namespace IngameScript
                 {
                     string[] kv = d.Split(':');
                     if (kv[0] == "title") title = kv[1];
+                    else if (kv[0] == "name") name = kv[1];
+                    else if (kv[0] == "music") music = kv[1];
                 }
             }
             // dispose
