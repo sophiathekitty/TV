@@ -54,6 +54,7 @@ namespace IngameScript
             Dictionary<string, int> enemyStats = new Dictionary<string, int>();
             string enemyStatus = "ok";
             string enemyName = "";
+            string playerName = "";
             bool encounterOver = false;
             Dictionary<string, Dictionary<string, string>> itemStats = new Dictionary<string, Dictionary<string, string>>();
             Dictionary<string, bool> gameBools = new Dictionary<string, bool>();
@@ -373,6 +374,11 @@ namespace IngameScript
 
                 string[] parts = save.Split('═');
                 if (parts.Length < 8) return;
+                string[] var = parts[0].Split(':');
+                if(var.Length < 2) return;
+                playerName = var[1];
+                if(playerName.ToLower().Contains(save_tag.ToLower())) playerName = GridInfo.GetVarAs<string>("NewGameName");
+                if(playerName == "") playerName = "Hero";
                 parsePlayerStats(parts[1], parts[2]);
                 parsePlayerGear(parts[3]);
                 parsePlayerInventory(parts[4]);
@@ -401,7 +407,7 @@ namespace IngameScript
             }
             string GetSaveData()
             {
-                string save = "save:Log "+saveId+ "═";
+                string save = "save:" + playerName + "═";
                 bool first = true;
                 foreach(var stat in playerStats)
                 {
@@ -558,6 +564,7 @@ namespace IngameScript
                     dialog = dialog.Replace("enemy." + enemyStat.Key, enemyStat.Value.ToString());
                 }
                 dialog = dialog.Replace("ENEMYNAME", enemyName);
+                dialog = dialog.Replace("PLAYERNAME", playerName);
                 return dialog;
             }
             //-------------------------------------------------------------------
@@ -593,7 +600,7 @@ namespace IngameScript
                 else if (gameTitleScreen != null) action = gameTitleScreen.HandleInput(input);
                 else if (gameActionMenu == null) action = actionBar.HandleInput(input);
                 else action = gameActionMenu.HandleInput(input);
-                //GridInfo.Echo("game: input: " +input+ " -> action: " + action);
+                GridInfo.Echo("game: input: " +input+ " -> action: " + action);
                 if(action == "<")
                 {
                     player.SetDirection("left");
@@ -635,9 +642,11 @@ namespace IngameScript
                 }
                 else if (action.StartsWith(save_tag.ToLower()) && gameTitleScreen != null)
                 {
+                    GridInfo.Echo("load game: " + action);
                     int.TryParse(action.Replace(save_tag.ToLower(), "").Trim(), out saveId);
                     string game_saves = SceneCollection.GetScene(name + ".Main.0.Text");
                     string[] save_data = game_saves.Split('║');
+                    GridInfo.Echo("saveId: " + saveId + " :: " + save_data.Length);
                     if(saveId <= 0 || saveId >= save_data.Length) return "";                    
                     LoadGameSave(save_data[saveId]);
                     gameTitleScreen.RemoveFromScreen(tv);

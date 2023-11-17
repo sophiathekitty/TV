@@ -358,25 +358,15 @@ namespace IngameScript
                     }
                     else if(action == "quit game")
                     {
-                        GridInfo.Echo("TV:0:QuitGame");
                         StopSound();
-                        GridInfo.Echo("TV:1:StopSound");
                         game.RemoveFromScreen(this);
-                        GridInfo.Echo("TV:2:GameRemovedFromScreen");
                         game = null;
-                        GridInfo.Echo("TV:3:GameDisposed");
                         actionBar.RemoveFromScreen(this);
-                        GridInfo.Echo("TV:4:ActionBarRemovedFromScreen");
                         menus.Hide();
-                        GridInfo.Echo("TV:5:MenusHidden");
                         barVisible = false;
-                        GridInfo.Echo("TV:6:BarHidden");
                         menuVisible = false;
-                        GridInfo.Echo("TV:7:MenuHidden");
                         barTimeout = 0;
-                        GridInfo.Echo("TV:8:BarTimeoutReset");
                         PlayRandomShow();
-                        GridInfo.Echo("TV:9:PlayRandomShow");
                         return "";
                     }
                     return action;

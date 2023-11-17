@@ -175,7 +175,67 @@ namespace IngameScript
                 }
                 return "";
             }
-            
+            public static string[] GetDefaultSave(string game)
+            {
+                return GetSave(game, 0);
+            }
+            public static List<string> GetSaveNames(string game)
+            {
+                List<string> names = new List<string>();
+                if (scenes.ContainsKey(game))
+                {
+                    if (scenes[game].ContainsKey("Main"))
+                    {
+                        if (scenes[game]["Main"].Count > 0)
+                        {
+                            string[] saves = scenes[game]["Main"][0].GetText().Split('║');
+                            for(int i = 1; i < saves.Length; i++)
+                            {
+                                string[] save = saves[i].Split('═');
+                                string[] var = save[0].Split(':');
+                                names.Add(var[1]);
+                            }
+                        }
+                    }
+                }
+                return names;
+            }
+            public static string[] GetSave(string game, int id)
+            {
+                if (scenes.ContainsKey(game))
+                {
+                    if (scenes[game].ContainsKey("Main"))
+                    {
+                        if (scenes[game]["Main"].Count > 0)
+                        {
+                            string[] saves = scenes[game]["Main"][0].GetText().Split('║');
+                            if(id < saves.Length)return saves[id].Split('═');
+                        }
+                    }
+                }
+                return null;
+            }
+            public static string GetDefaultSaveName(string game)
+            {
+                string[] save = GetDefaultSave(game);
+                if(save == null) return "Log";
+                string[] var = save[0].Split(':');
+                return var[1];
+            }
+            public static void ResetSaves(string game)
+            {
+                // need to get the default save and then set all the saves to that. but we also need to update the save names to be like DefaultSaveName 1, DefaultSaveName 2, etc.
+                string[] defaultSave = GetDefaultSave(game);
+                if (defaultSave == null) return;
+                string saveName = defaultSave[0].Split(':')[1];
+                string[] saves = scenes[game]["Main"][0].GetText().Split('║');
+                for (int i = 1; i < saves.Length; i++)
+                {
+                    defaultSave[0] = "save:" + saveName + " " + i;
+                    saves[i] = string.Join("═",defaultSave);
+                }
+                scenes[game]["Main"][0].WriteText(string.Join("║", saves));
+            }
             public class SceneAddress
             {
                 public string show;

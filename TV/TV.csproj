@@ -92,6 +92,7 @@
     <Compile Include="SpriteOptions.cs" />
     <Compile Include="StartMenu.cs" />
     <Compile Include="Subtitles.cs" />
+    <Compile Include="TextGridKeyboard.cs" />
     <Compile Include="Tilemap.cs" />
     <Compile Include="TilemapExit.cs" />
     <Compile Include="TV.cs" />

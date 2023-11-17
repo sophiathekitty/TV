@@ -24,11 +24,30 @@ namespace IngameScript
     {
         public class StartMenu : ScreenMenu
         {
-            public StartMenu(string title,string save_tag, float width, ScreenActionBar actionBar, bool background = true) : base(title, width, actionBar)
+            string game;
+            public StartMenu(string title, string game,List<string> saveNames, float width, ScreenActionBar actionBar, bool background = true) : base(title, width, actionBar)
             {
+                this.game = game;
                 if(background) SetBackgroundColor(Color.Black);
-                for(int i = 1; i < 4; i++) AddLabel(save_tag + " " + i);
+                foreach(string save in saveNames) AddLabel(save);
+                AddLabel("Delete Saves");
                 AddLabel("Quit Game");
+            }
+            public override string HandleInput(string argument)
+            {
+                string action = base.HandleInput(argument);
+                if(action == "delete saves")
+                {
+                    SceneCollection.ResetSaves(game);
+                    List<string> saveNames = SceneCollection.GetSaveNames(game);
+                    GridInfo.Echo("StartMenu:saveNames: "+saveNames.Count);
+                    for(int i = 0; i < saveNames.Count; i++)
+                    {
+                        GridInfo.Echo("StartMenu:saveNames: " + menuItems[i].Label + " -> " + saveNames[i]);
+                        menuItems[i].Label = saveNames[i];
+                    }
+                }
+                return action;
             }
         }
     }
