@@ -75,7 +75,7 @@ namespace IngameScript
             //
             // DrawSprites - draw sprites to the screen
             //
-            public void Draw()
+            public virtual void Draw()
             {
                 //GridInfo.Echo("Screen: Draw");
                 var frame = _drawingSurface.DrawFrame();

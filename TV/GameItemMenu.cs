@@ -27,16 +27,16 @@ namespace IngameScript
             List<GameItem> items;
             public GameItemMenu(string title, float width, ScreenActionBar actionBar, List<GameItem> items) : base(title, width, actionBar)
             {
-                GridInfo.Echo("GameItemMenu:1: "+title);
+                //GridInfo.Echo("GameItemMenu:1: "+title);
                 handleEditing = false;
                 SetBackgroundColor(Color.Black);
                 this.items = items;
                 foreach(GameItem item in items)
                 {
-                    GridInfo.Echo("GameItemMenu:2: "+item.Name);
+                    //GridInfo.Echo("GameItemMenu:2: "+item.Name);
                     AddLabel(item.Name,item.count.ToString());
                 }
-                GridInfo.Echo("GameItemMenu:3: "+items.Count);
+                //GridInfo.Echo("GameItemMenu:3: "+items.Count);
             }
             public void Update(Dictionary<string,int> inventory)
             {

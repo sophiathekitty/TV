@@ -131,7 +131,7 @@ namespace IngameScript
                 GameAction.GameSpells = this;
                 GameAction.GameEncounters = this;
                 if(titleMusic != "") TV.PlayMusic(titleMusic);
-                GridInfo.Echo("GameRPG: " + name + " loaded");
+                //GridInfo.Echo("GameRPG: " + name + " loaded");
             }
             // parse game info
             void parseInfo(string data)
@@ -170,7 +170,7 @@ namespace IngameScript
                     string[] pair = part.Split(':');
                     string stat_name = pair[0].Trim();
                     string stat_value = pair[1].Trim();
-                    GridInfo.Echo("parsePlayerStats: " + stat_name + " = " + stat_value);
+                    //GridInfo.Echo("parsePlayerStats: " + stat_name + " = " + stat_value);
                     // stat...
                     if (playerStats.ContainsKey(stat_name)) playerStats[stat_name] = int.Parse(stat_value);
                     else playerStats.Add(stat_name, int.Parse(stat_value));
@@ -188,7 +188,7 @@ namespace IngameScript
                     {
                         string[] pair = part.Split(':');
                         playerMaxStats[pair[0].Trim()] = int.Parse(pair[1].Trim());
-                        GridInfo.Echo("parsePlayerStats: " + pair[0].Trim() + " = " + pair[1].Trim());
+                        //GridInfo.Echo("parsePlayerStats: " + pair[0].Trim() + " = " + pair[1].Trim());
                     }
                 }
             }
@@ -305,7 +305,7 @@ namespace IngameScript
                     {
                         GameAction gameAction = new GameAction(action);
                         gameLogic.Add(gameAction.Name, gameAction);
-                        GridInfo.Echo("gameLogic: " + gameAction.Name);
+                        //GridInfo.Echo("gameLogic: " + gameAction.Name);
                     }
                 }
             }
@@ -336,28 +336,28 @@ namespace IngameScript
             // parse bools
             void parseBools(string data)
             {
-                GridInfo.Echo("parseBools:1: " + data);
+                //GridInfo.Echo("parseBools:1: " + data);
                 string[] vars = data.Split(',');
                 foreach(string var in vars)
                 {
-                    GridInfo.Echo("parseBools:2: " + var);
+                    //GridInfo.Echo("parseBools:2: " + var);
                     string[] pair = var.Split(':');
                     if (pair.Length != 2) continue;
-                    GridInfo.Echo("parseBools:3: " + pair[0].Trim() + " = " + pair[1].Trim());
+                    //GridInfo.Echo("parseBools:3: " + pair[0].Trim() + " = " + pair[1].Trim());
                     gameBools.Add(pair[0].Trim(), bool.Parse(pair[1].Trim()));
                 }
             }
             // parse ints
             void parseInts(string data)
             {
-                GridInfo.Echo("parseInts:1: " + data);
+                //GridInfo.Echo("parseInts:1: " + data);
                 string[] vars = data.Split(',');
                 foreach (string var in vars)
                 {
-                    GridInfo.Echo("parseInts:2: " + var);
+                    //GridInfo.Echo("parseInts:2: " + var);
                     string[] pair = var.Split(':');
                     if (pair.Length != 2) continue;
-                    GridInfo.Echo("parseInts:3: " + pair[0].Trim() + " = " + pair[1].Trim());
+                    //GridInfo.Echo("parseInts:3: " + pair[0].Trim() + " = " + pair[1].Trim());
                     gameInts.Add(pair[0].Trim(), int.Parse(pair[1].Trim()));
                 }
             }
@@ -468,10 +468,10 @@ namespace IngameScript
             public void LoadMap(string map_name, int x, int y)
             {
                 CloseDialog();
-                //GridInfo.Echo("LoadMap: " + map_name);
+                GridInfo.Echo("LoadMap: " + map_name);
                 if (!maps.ContainsKey(map_name)) return;
                 //currentMap = map_name;
-                //GridInfo.Echo("map address: " + maps[map_name]);
+                GridInfo.Echo("map address: " + maps[map_name]);
                 if (!firstLoadMap)
                 {
                     map.RemoveFromScreen(tv);
@@ -489,7 +489,7 @@ namespace IngameScript
                 playerY = y;
                 map.SetViewCenter(playerX, playerY);
                 player.Position = map.GridPosToScreenPos(playerX, playerY);
-                //GridInfo.Echo("player position: ("+ playerX+", "+ playerY+ ") " + player.Position);
+                GridInfo.Echo("player position: ("+ playerX+", "+ playerY+ ") " + player.Position);
                 firstLoadMap = false;
                 Tilemap.name = map_name;
                 if(Tilemap.music != "") TV.PlayMusic(Tilemap.music);
@@ -500,19 +500,19 @@ namespace IngameScript
             public void AddToScreen(Screen screen)
             {
                 tv = screen;
-                GridInfo.Echo("game: add to screen");
+                //GridInfo.Echo("game: add to screen");
                 actionBar.RemoveFromScreen(screen);
-                GridInfo.Echo("game: add to screen: actionBar removed");
+                //GridInfo.Echo("game: add to screen: actionBar removed");
                 map.AddToScreen(screen);
-                GridInfo.Echo("game: add to screen: map added");
+                //GridInfo.Echo("game: add to screen: map added");
                 screen.AddSprite(player);
-                GridInfo.Echo("game: add to screen: player added");
+                //GridInfo.Echo("game: add to screen: player added");
                 map.AddOverlayToScreen(screen);
-                GridInfo.Echo("game: add to screen: map overlay added");
+                //GridInfo.Echo("game: add to screen: map overlay added");
                 gameTitleScreen.AddToScreen(screen);
-                GridInfo.Echo("game: add to screen: title screen added");
+                //GridInfo.Echo("game: add to screen: title screen added");
                 actionBar.AddToScreen(screen);
-                GridInfo.Echo("game: add to screen: actionBar added");
+                //GridInfo.Echo("game: add to screen: actionBar added");
             }
             // remove from screen
             public void RemoveFromScreen(Screen screen)
@@ -600,7 +600,7 @@ namespace IngameScript
                 else if (gameTitleScreen != null) action = gameTitleScreen.HandleInput(input);
                 else if (gameActionMenu == null) action = actionBar.HandleInput(input);
                 else action = gameActionMenu.HandleInput(input);
-                GridInfo.Echo("game: input: " +input+ " -> action: " + action);
+                //GridInfo.Echo("game: input: " +input+ " -> action: " + action);
                 if(action == "<")
                 {
                     player.SetDirection("left");
@@ -642,11 +642,11 @@ namespace IngameScript
                 }
                 else if (action.StartsWith(save_tag.ToLower()) && gameTitleScreen != null)
                 {
-                    GridInfo.Echo("load game: " + action);
+                    //GridInfo.Echo("load game: " + action);
                     int.TryParse(action.Replace(save_tag.ToLower(), "").Trim(), out saveId);
                     string game_saves = SceneCollection.GetScene(name + ".Main.0.Text");
                     string[] save_data = game_saves.Split('║');
-                    GridInfo.Echo("saveId: " + saveId + " :: " + save_data.Length);
+                    //GridInfo.Echo("saveId: " + saveId + " :: " + save_data.Length);
                     if(saveId <= 0 || saveId >= save_data.Length) return "";                    
                     LoadGameSave(save_data[saveId]);
                     gameTitleScreen.RemoveFromScreen(tv);
@@ -689,7 +689,7 @@ namespace IngameScript
                             //GridInfo.Echo("encounterOver!"+gameBools.ContainsKey("playerWon").ToString() + ", " + gameBools["playerWon"].ToString() + ", " + (promptNPC != null).ToString() + ", " + (promptNPC.encounterWin != null).ToString());
                             if(gameBools.ContainsKey("playerWon") && gameBools["playerWon"] && promptNPC != null && promptNPC.encounterWin != null)
                             {
-                                GridInfo.Echo("encounterWin: " + promptNPC.encounterWin.Name);
+                                //GridInfo.Echo("encounterWin: " + promptNPC.encounterWin.Name);
                                 promptNPC.encounterWin.Run();
                             }
                             if(Tilemap.music != "") TV.PlayMusic(Tilemap.music);
@@ -756,7 +756,7 @@ namespace IngameScript
             }
             void ShowSpellsMenu()
             {
-                GridInfo.Echo("ShowSpellsMenu");
+                //GridInfo.Echo("ShowSpellsMenu");
                 gameSpellMenu = new GameSpellMenu("Spells", 300, actionBar);
                 gameSpellMenu.AddToScreen(tv);
                 if (gameActionMenu != null) gameActionMenu.Visible = false;
@@ -772,32 +772,32 @@ namespace IngameScript
             }
             void ShowItemsMenu()
             {
-                GridInfo.Echo("ShowItemsMenu");
+                //GridInfo.Echo("ShowItemsMenu");
                 if(gameActionMenu != null) gameActionMenu.Visible = false;
                 if (battleMenu != null) battleMenu.Visible = false;
                 List<GameItem> items = new List<GameItem>();
                 foreach(var item in playerInventory)
                 {
-                    GridInfo.Echo("item: " + item.Key + " = " + item.Value);
+                    //GridInfo.Echo("item: " + item.Key + " = " + item.Value);
                     if (!itemStats.ContainsKey(item.Key)) continue;
-                    GridInfo.Echo("item: " + item.Key + " = " + item.Value + " :: " + itemStats[item.Key]["item_type"]);
+                    //GridInfo.Echo("item: " + item.Key + " = " + item.Value + " :: " + itemStats[item.Key]["item_type"]);
                     if (itemStats[item.Key].ContainsKey("effect") && gameLogic.ContainsKey(itemStats[item.Key]["effect"]))
                     {
-                        GridInfo.Echo("item: " + item.Key + " = " + item.Value + " :: " + itemStats[item.Key]["item_type"] + " :1: " + itemStats[item.Key]["effect"]);
+                        //GridInfo.Echo("item: " + item.Key + " = " + item.Value + " :: " + itemStats[item.Key]["item_type"] + " :1: " + itemStats[item.Key]["effect"]);
                         items.Add(new GameItem(item.Key, item.Value, gameLogic[itemStats[item.Key]["effect"]]));
                     }
                     else if (playerGear.ContainsKey(itemStats[item.Key]["item_type"]))
                     {
-                        GridInfo.Echo("item: " + item.Key + " = " + item.Value + " :: " + itemStats[item.Key]["item_type"] + " :2: " + playerGear[itemStats[item.Key]["item_type"]]);
+                        //GridInfo.Echo("item: " + item.Key + " = " + item.Value + " :: " + itemStats[item.Key]["item_type"] + " :2: " + playerGear[itemStats[item.Key]["item_type"]]);
                         items.Add(new GameItem(item.Key, itemStats[item.Key]["item_type"], item.Value));
                     }
                     else
                     {
-                        GridInfo.Echo("item: " + item.Key + " = " + item.Value + " :: " + itemStats[item.Key]["item_type"] + " :3: " + item.Value);
+                        //GridInfo.Echo("item: " + item.Key + " = " + item.Value + " :: " + itemStats[item.Key]["item_type"] + " :3: " + item.Value);
                         items.Add(new GameItem(item.Key, item.Value));
                     }
                 }
-                GridInfo.Echo("ShowItemsMenu: " + items.Count);
+                //GridInfo.Echo("ShowItemsMenu: " + items.Count);
                 gameItemMenu = new GameItemMenu("Items", 300, actionBar, items);
                 gameItemMenu.AddToScreen(tv);
             }
@@ -849,13 +849,13 @@ namespace IngameScript
             //Try move player
             public void TryMovePlayer(int x, int y)
             {
-                //GridInfo.Echo("TryMovePlayer: (" + x + ", " + y + ")");
+                GridInfo.Echo("TryMovePlayer: (" + x + ", " + y + ")");
                 TilemapExit exit = map.ExitOn(x, y);
                 if (map.IsOccupied(x, y)) return;
                 //GridInfo.Echo("not occupied");
                 if (exit != null)
                 {
-                    //GridInfo.Echo("exit: " + exit.Map);
+                    GridInfo.Echo("exit: " + exit.Map);
                     LoadMap(exit.Map, exit.MapX, exit.MapY);
                     return;
                 }
@@ -953,7 +953,7 @@ namespace IngameScript
                 }
                 else if (objectName == "ints")
                 {
-                    GridInfo.Echo("SetValue: ints: " + name + " = " + value);
+                    //GridInfo.Echo("SetValue: ints: " + name + " = " + value);
                     gameInts[name] = (int)double.Parse(value);
                     //GridInfo.Echo("SetValue: ints: " + name + " = " + value + " = " + gameInts[name]);
                 }
@@ -969,14 +969,14 @@ namespace IngameScript
                 }
                 else if(objectName == "encounter")
                 {
-                    GridInfo.Echo("SetValue: encounter: " + name + " = " + value);
+                    //GridInfo.Echo("SetValue: encounter: " + name + " = " + value);
                     // set encounter vars
                     if(name == "over") encounterOver = bool.Parse(value);
                     if (encounterOver && battleWindow != null) battleWindow.HideEnemy();
                 }
                 else
                 {
-                    GridInfo.Echo("SetValue: unknown object: " + objectName);
+                    //GridInfo.Echo("SetValue: unknown object: " + objectName);
                 }
             }
             void SetNPCValue(string name, npc me, string value)
@@ -1035,13 +1035,13 @@ namespace IngameScript
                 }
                 else if (objectName == "inventory")
                 {
-                    GridInfo.Echo("GetValue: inventory: " + name);
+                    //GridInfo.Echo("GetValue: inventory: " + name);
                     if (playerInventory.ContainsKey(name))
                     {
-                        GridInfo.Echo("GetValue: inventory: " + name + " = " + playerInventory[name]);
+                        //GridInfo.Echo("GetValue: inventory: " + name + " = " + playerInventory[name]);
                         return playerInventory[name].ToString();
                     }
-                    GridInfo.Echo("GetValue: inventory: " + name + " not found");
+                    //GridInfo.Echo("GetValue: inventory: " + name + " not found");
                     return "0";
                 }
                 else if (objectName == "bools")
@@ -1112,7 +1112,7 @@ namespace IngameScript
                 }
                 else
                 {
-                    GridInfo.Echo("GetValue: unknown object: " + objectName + "... or key (" + name + ") wasn't present in dictionary.");
+                    //GridInfo.Echo("GetValue: unknown object: " + objectName + "... or key (" + name + ") wasn't present in dictionary.");
                 }
                 return "";
             }
@@ -1148,14 +1148,14 @@ namespace IngameScript
             //-------------------------------------------------------------------
             public void Shop(string itemlist)
             {
-                GridInfo.Echo("ShowShop: " + itemlist);
+                //GridInfo.Echo("ShowShop: " + itemlist);
                 List<ShopItem> shop_items = new List<ShopItem>();
                 string[] items = itemlist.Split(',');
                 foreach (string item in items)
                 {
                     if (itemStats.ContainsKey(item)) shop_items.Add(new ShopItem(itemStats[item]));
                 }
-                GridInfo.Echo("ShowShop: " + shop_items.Count);
+                //GridInfo.Echo("ShowShop: " + shop_items.Count);
                 shopMenu = new ShopMenu("Buy", 420, actionBar, shop_items);
                 shopMenu.playerSelling = false;
                 shopMenu.AddToScreen(tv);
@@ -1163,15 +1163,15 @@ namespace IngameScript
             }
             public void Sell()
             {
-                GridInfo.Echo("SellItems");
+                //GridInfo.Echo("SellItems");
                 List<ShopItem> shop_items = new List<ShopItem>();
                 foreach (var item in playerInventory)
                 {
-                    GridInfo.Echo("item: " + item.Key + " = " + item.Value);
+                    //GridInfo.Echo("item: " + item.Key + " = " + item.Value);
                     if (!itemStats.ContainsKey(item.Key) || !itemStats[item.Key].ContainsKey("cost")) continue;
                     shop_items.Add(new ShopItem(itemStats[item.Key]));
                 }
-                GridInfo.Echo("SellItems: " + shop_items.Count);
+                //GridInfo.Echo("SellItems: " + shop_items.Count);
                 if (shop_items.Count == 0)
                 {
                     Say(NothingToSell);
@@ -1296,12 +1296,12 @@ namespace IngameScript
 
             public void CastSpell(string spell)
             {
-                GridInfo.Echo("CastSpell: " + spell);
+                //GridInfo.Echo("CastSpell: " + spell);
                 if (playerSpells.ContainsKey(spell) && playerSpells[spell].ContainsKey("effect") && gameLogic.ContainsKey(playerSpells[spell]["effect"]))
                 {
                     int cost = 0;
                     int.TryParse(playerSpells[spell]["cost"], out cost);
-                    GridInfo.Echo("CastSpell: " + cost + " :: " + playerStats[spellsCost]);
+                    //GridInfo.Echo("CastSpell: " + cost + " :: " + playerStats[spellsCost]);
                     if (playerStats[spellsCost] < cost) return;
                     playerStats[spellsCost] -= cost;
                     HideSpellMenu();
@@ -1311,12 +1311,12 @@ namespace IngameScript
 
             public bool CanCastSpell(string spell)
             {
-                GridInfo.Echo("CanCastSpell: " + spell);
+                //GridInfo.Echo("CanCastSpell: " + spell);
                 if (playerSpells.ContainsKey(spell) && playerSpells[spell].ContainsKey("cost"))
                 {
                     int cost = 0;
                     int.TryParse(playerSpells[spell]["cost"], out cost);
-                    GridInfo.Echo("CanCastSpell: " + cost + " :: " + playerStats[spellsCost]);
+                    //GridInfo.Echo("CanCastSpell: " + cost + " :: " + playerStats[spellsCost]);
                     return playerStats[spellsCost] >= cost;
                 }
                 return false;
@@ -1356,7 +1356,7 @@ namespace IngameScript
                 string battleBack = LoadBattleBack();
                 if(enemy == "") 
                 {
-                    GridInfo.Echo("StartEncounter: " + enemies[enemyIndex] + " not found");
+                    //GridInfo.Echo("StartEncounter: " + enemies[enemyIndex] + " not found");
                     return;
                 }
                 if(battleMusic != "") TV.PlayMusic(battleMusic);
@@ -1392,7 +1392,7 @@ namespace IngameScript
                         string[] parts = enemyData.Split('═');
                         if(parts.Length < 2)
                         {
-                            GridInfo.Echo("LoadEnemy: " + enemy + " not found");
+                            //GridInfo.Echo("LoadEnemy: " + enemy + " not found");
                             return "";
                         }
                         string[] stats = parts[0].Split(',');
@@ -1421,7 +1421,7 @@ namespace IngameScript
                         string[] parts = battleBack.Split('═');
                         if (parts.Length < 2)
                         {
-                            GridInfo.Echo("LoadBattleBack: " + enemyName + " not found");
+                            //GridInfo.Echo("LoadBattleBack: " + enemyName + " not found");
                             return "";
                         }
                         sprite = parts[1].Trim();

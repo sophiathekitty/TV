@@ -31,14 +31,7 @@ namespace IngameScript
             ScreenSprite gameBack;
             public GamesMenu(float width, ScreenActionBar actionBar) : base("Games", width, actionBar)
             {
-                List<string> available = SceneCollection.games.ToList();
-                foreach (string game in available)
-                {
-                    games.Add(new GamesMenuItem(game));
-                    AddLabel(games[games.Count-1].name);
-                }
                 gameBack = new ScreenSprite(ScreenSprite.ScreenSpriteAnchor.TopCenter, Vector2.Zero, ScreenSprite.MONOSPACE_FONT_SIZE, Vector2.Zero, Color.White, "Monospace","",TextAlignment.CENTER,SpriteType.TEXT);
-                updateBack();
             }
             void updateBack()
             {
@@ -61,6 +54,15 @@ namespace IngameScript
             }
             public override void AddToScreen(Screen screen)
             {
+                List<string> available = SceneCollection.games.ToList();
+                menuItems.Clear();
+                games.Clear();
+                foreach (string game in available)
+                {
+                    games.Add(new GamesMenuItem(game));
+                    AddLabel(games[games.Count - 1].name);
+                }
+                updateBack();
                 actionBar.RemoveFromScreen(screen);
                 screen.AddSprite(gameBack);
                 base.AddToScreen(screen);

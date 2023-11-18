@@ -55,6 +55,7 @@ namespace IngameScript
                 StopMusic = StopSound;
                 LaunchGame = PlayGame;
                 tvSound = GridBlocks.TVSound;
+                BackgroundColor = Color.Black;
                 // setup show
                 List<string> availableShows = SceneCollection.shows.ToList();
 
@@ -91,14 +92,14 @@ namespace IngameScript
             }
             void PlaySound(string sound)
             {
-                GridInfo.Echo("TV:PlaySound: " + sound);
+                //GridInfo.Echo("TV:PlaySound: " + sound);
                 if(tvSound == null) return;
                 List<string> sounds = new List<string>();
                 tvSound.GetSounds(sounds);
-                GridInfo.Echo("TV:PlaySound: " + sounds.Count);
+                //GridInfo.Echo("TV:PlaySound: " + sounds.Count);
                 if (sounds.Contains(sound))
                 {
-                    GridInfo.Echo("TV:PlaySound:found: " + sound);
+                    //GridInfo.Echo("TV:PlaySound:found: " + sound);
                     tvSound.LoopPeriod = 300;
                     tvSound.SelectedSound = sound;
                     tvSound.Play();
@@ -107,11 +108,11 @@ namespace IngameScript
                 else StopSound();
             }
             void StopSound() { 
-                GridInfo.Echo("TV:StopSound");
+                //GridInfo.Echo("TV:StopSound");
                 if (tvSound == null) return;
                 tvSound.Stop();
                 tvSound.ApplyAction("StopSound");
-                GridInfo.Echo("TV:StopSound:Done");
+                //GridInfo.Echo("TV:StopSound:Done");
             }
             void PlayGame(string gameName)
             {

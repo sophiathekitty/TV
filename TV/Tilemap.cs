@@ -462,7 +462,7 @@ namespace IngameScript
             public void AddToScreen(Screen screen)
             {
                 if (screen == null) return;
-                GridInfo.Echo("AddToScreen:0: " + visibleTiles.Count);
+                //GridInfo.Echo("AddToScreen:0: " + visibleTiles.Count);
                 // clear out the old sprites
                 foreach(ScreenSprite sprite in visibleTiles)
                 {
@@ -472,16 +472,16 @@ namespace IngameScript
                 {
                     screen.RemoveSprite(sprite);
                 }
-                GridInfo.Echo("AddToScreen:1: " + visibleTiles.Count);
+                //GridInfo.Echo("AddToScreen:1: " + visibleTiles.Count);
                 visibleTiles.Clear();
-                GridInfo.Echo("AddToScreen:2: " + visibleTiles.Count);
+                //GridInfo.Echo("AddToScreen:2: " + visibleTiles.Count);
                 overlayTiles.Clear();
-                GridInfo.Echo("AddToScreen:3: " + visibleTiles.Count);
+                //GridInfo.Echo("AddToScreen:3: " + visibleTiles.Count);
                 // setup the screen sprites
                 // we need to space them out evenly on the screen
                 Vector2 tileSize = TileSize;//new Vector2(screenWidth / viewPortWidth, screenHeight / viewPortHeight);
                 Vector2 tilePos = new Vector2(0, 0);
-                GridInfo.Echo("AddToScreen:4: " + tileSize.ToString());
+                //GridInfo.Echo("AddToScreen:4: " + tileSize.ToString());
                 if(tileMap == null) return;
                 for(int y = 0; y < viewPortHeight; y++)
                 {
@@ -501,7 +501,7 @@ namespace IngameScript
                     tilePos.X = 0;
                     tilePos.Y += tileSize.Y;
                 }
-                GridInfo.Echo("AddToScreen:5: " + visibleTiles.Count);
+                //GridInfo.Echo("AddToScreen:5: " + visibleTiles.Count);
                 // add npcs to screen
                 foreach(npc npc in npcs)
                 {
@@ -516,7 +516,7 @@ namespace IngameScript
                     //npc.RotationOrScale = 0.5f;
                     //GridInfo.Echo("npc: added "+npc.RotationOrScale);
                 }
-                GridInfo.Echo("AddToScreen:6: " + npcs.Count);
+                //GridInfo.Echo("AddToScreen:6: " + npcs.Count);
             }
             public void AddOverlayToScreen(Screen screen)
             {

@@ -92,17 +92,16 @@ namespace IngameScript
                 while (broadcastListener.HasPendingMessage)
                 {
                     MyIGCMessage message = broadcastListener.AcceptMessage();
+                    Echo(message.Tag + ": " + message.As<string>());
                     string[] data = message.As<string>().Split('║');
                     if (data.Length == 2)
                     {
                         SetVar(data[0], data[1]);
-                    }
+                    } else messages.Add(message);
                 }
-                while (IGC.UnicastListener.HasPendingMessage && handleUnicastMessages)
+                while (IGC.UnicastListener.HasPendingMessage)
                 {
-                    MyIGCMessage message = IGC.UnicastListener.AcceptMessage();
-                    if (GridVars.ContainsKey(message.Tag)) SetVar(message.Tag, message.As<string>());
-                    else messages.Add(message);
+                    messages.Add(IGC.UnicastListener.AcceptMessage());
                 }
                 foreach (IMyBroadcastListener listener in listeners)
                 {

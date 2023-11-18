@@ -44,12 +44,12 @@ namespace IngameScript
                 for(int i = 1; i < save_data.Length; i++)
                 {
                     string[] save = save_data[i].Split('═');
-                    GridInfo.Echo("GameTitleScreen:save data parse:1: "+save.Length);
+                    //GridInfo.Echo("GameTitleScreen:save data parse:1: "+save.Length);
                     if (save.Length < 1) continue;
                     string[] vars = save[0].Split(':');
-                    GridInfo.Echo("GameTitleScreen:save data parse:2:"+vars.Length);
+                    //GridInfo.Echo("GameTitleScreen:save data parse:2:"+vars.Length);
                     if (vars.Length < 2) continue;
-                    GridInfo.Echo("GameTitleScreen:save name: "+vars[1]);
+                    //GridInfo.Echo("GameTitleScreen:save name: "+vars[1]);
                     saveNames.Add(vars[1]);
                 }
                 menu = new StartMenu("",name, saveNames, width, actionBar, false);
@@ -59,14 +59,14 @@ namespace IngameScript
                 string action = "";
                 if(keyboard == null) action = menu.HandleInput(input);
                 else action = keyboard.HandleInput(input);
-                GridInfo.Echo("GameTitleScreen:HandleInput:action: "+action);
+                //GridInfo.Echo("GameTitleScreen:HandleInput:action: "+action);
                 if (saveNames.Any(name=>name.Equals(action,StringComparison.OrdinalIgnoreCase)))
                 {
                     string LoadGame = saveTag.ToLower() + " "+(menu.SelectedIndex+1);
-                    GridInfo.Echo("GameTitleScreen:HandleInput:LoadGame: " + LoadGame);
+                    //GridInfo.Echo("GameTitleScreen:HandleInput:LoadGame: " + LoadGame);
                     if(LoadGame == action)
                     {
-                        GridInfo.Echo("GameTitleScreen:HandleInput:LoadGame: New Game! Show Keyboard");
+                        //GridInfo.Echo("GameTitleScreen:HandleInput:LoadGame: New Game! Show Keyboard");
                         // new game show keyboard
                         keyboard = new TextGridKeyboard(menu.actionBar,"Name:", "NewGameName");
                         keyboard.AddToScreen(screen);

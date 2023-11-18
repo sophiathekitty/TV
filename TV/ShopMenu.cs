@@ -36,16 +36,16 @@ namespace IngameScript
             public bool playerSelling = false;
             public ShopMenu(string title, float width, ScreenActionBar actionBar, List<ShopItem> items) : base(title, width, actionBar)
             {
-                GridInfo.Echo("ShopMenu:1: "+title);
+                //GridInfo.Echo("ShopMenu:1: "+title);
                 handleEditing = false;
                 SetBackgroundColor(Color.Black);
                 this.items = items;
                 foreach(ShopItem item in items)
                 {
-                    GridInfo.Echo("ShopMenu:2: "+item.Name);
+                    //GridInfo.Echo("ShopMenu:2: "+item.Name);
                     AddLabel(item.Name,item.Cost.ToString());
                 }
-                GridInfo.Echo("ShopMenu:3: "+items.Count);
+                //GridInfo.Echo("ShopMenu:3: "+items.Count);
             }
             public ShopMenu(string title, float width, ScreenActionBar actionBar, string items): base(title, width, actionBar)
             {
@@ -67,7 +67,7 @@ namespace IngameScript
             public override string HandleInput(string input)
             {
                 string action = base.HandleInput(input);
-                GridInfo.Echo("ShopMenu:4: "+action);
+                //GridInfo.Echo("ShopMenu:4: "+action);
                 foreach(ShopItem gameItem in items)
                 {
                     if (gameItem.Name.ToLower() == action)

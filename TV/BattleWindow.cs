@@ -30,7 +30,7 @@ namespace IngameScript
             {
                 if(back.Length > 0)
                 {
-                    GridInfo.Echo("BattleWindow: back:0: " + back.Length);
+                    //GridInfo.Echo("BattleWindow: back:0: " + back.Length);
                     string[] lines = back.Split('\n');
                     //float width = lines[0].Length/Tilemap.fontSize;
                     float height = lines.Length/Tilemap.fontSize;

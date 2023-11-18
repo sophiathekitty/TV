@@ -91,7 +91,7 @@ namespace IngameScript
             public string HandleInput(string input)
             {
                 string action = actionBar.HandleInput(input);
-                GridInfo.Echo("TextGridKeyboard:HandleInput:action: " + action);
+                //GridInfo.Echo("TextGridKeyboard:HandleInput:action: " + action);
                 if (action == "<") curserIndex--;
                 else if (action == ">") curserIndex++;
                 else if (action == "^") curserIndex -= 10;

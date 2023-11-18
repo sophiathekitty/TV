@@ -40,10 +40,10 @@ namespace IngameScript
                 {
                     SceneCollection.ResetSaves(game);
                     List<string> saveNames = SceneCollection.GetSaveNames(game);
-                    GridInfo.Echo("StartMenu:saveNames: "+saveNames.Count);
+                    //GridInfo.Echo("StartMenu:saveNames: "+saveNames.Count);
                     for(int i = 0; i < saveNames.Count; i++)
                     {
-                        GridInfo.Echo("StartMenu:saveNames: " + menuItems[i].Label + " -> " + saveNames[i]);
+                        //GridInfo.Echo("StartMenu:saveNames: " + menuItems[i].Label + " -> " + saveNames[i]);
                         menuItems[i].Label = saveNames[i];
                     }
                 }

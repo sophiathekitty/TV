@@ -30,14 +30,14 @@ namespace IngameScript
             public int count = 1;
             public GameItem(string name, int ammount, GameAction useAction = null)
             {
-                GridInfo.Echo("GameItem:1: "+name);
+                //GridInfo.Echo("GameItem:1: "+name);
                 Name = name;
                 count = ammount;
                 this.useAction = useAction;
             }
             public GameItem(string name, string type, int ammount)
             {
-                GridInfo.Echo("GameItem:2: "+name);
+                //GridInfo.Echo("GameItem:2: "+name);
                 Name = name;
                 this.type = type;
                 count = ammount;

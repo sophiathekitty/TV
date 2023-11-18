@@ -26,6 +26,7 @@ namespace IngameScript
         //=======================================================================
         // TV - main program
         TV tv;
+        ProgramScreen screen;
         // constructor
         public Program()
         {
@@ -33,7 +34,9 @@ namespace IngameScript
             if(Storage != "") GridInfo.Load(Storage);
             SceneCollection.Init();
             tv = new TV();
+            screen = new ProgramScreen(Me.GetSurface(0));
             Runtime.UpdateFrequency = UpdateFrequency.Update1;
+            Echo("TV Booted");
         }
         // save data
         public void Save()
@@ -46,6 +49,11 @@ namespace IngameScript
             if (argument != "") tv.HandleInput(argument);
             else if (GridBlocks.Couch.IsUnderControl || GridBlocks.Keyboard.IsUnderControl) tv.Play();
             else tv.Idle();
+            if (argument == "")
+            {
+                SceneCollection.Network();
+                screen.Draw();
+            }
         }
         //=======================================================================
     }

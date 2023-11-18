@@ -47,7 +47,7 @@ namespace IngameScript
                 //GridInfo.Echo("Surface Sprite Count: " + s.Count);
                 if (s.Contains("Ambient1"))
                 {
-                    GridInfo.Echo("Ambient1");
+                    //GridInfo.Echo("Ambient1");
                     sprite.Data = "Ambient1";
                     for(int i= 1; i <= 16; i++) images.Add("Ambient"+i);
                     //images.Add("Ambient3");

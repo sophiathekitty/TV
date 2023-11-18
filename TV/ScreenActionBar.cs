@@ -120,7 +120,7 @@ namespace IngameScript
                 index--;
                 if (index >= 0 && index < actions.Length)
                 {
-                    GridInfo.Echo(actions[index]);
+                    //GridInfo.Echo(actions[index]);
                     return actions[index].ToLower();
                 }
                 return "";

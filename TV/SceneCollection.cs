@@ -16,6 +16,7 @@ using VRage.Game.GUI.TextPanel;
 using VRage.Game.ModAPI.Ingame;
 using VRage.Game.ModAPI.Ingame.Utilities;
 using VRage.Game.ObjectBuilders.Definitions;
+using VRage.Scripting;
 using VRageMath;
 
 namespace IngameScript
@@ -27,9 +28,14 @@ namespace IngameScript
         //----------------------------------------------------------------------
         public class SceneCollection
         {
-            static Dictionary<string, Dictionary<string,List<IMyTextPanel>>> scenes = new Dictionary<string, Dictionary<string, List<IMyTextPanel>>>();
-            static List<IMyTextPanel> unused = new List<IMyTextPanel>();
+            public static Dictionary<string, Dictionary<string,List<IMyTextPanel>>> scenes = new Dictionary<string, Dictionary<string, List<IMyTextPanel>>>();
+            public static List<IMyTextPanel> unused = new List<IMyTextPanel>();
             public static List<string> StockDialog = new List<string>();
+            public static Dictionary<string, RemoteShow> remoteShows = new Dictionary<string, RemoteShow>();
+            static bool sending = false;
+            static long sendingTo = 0;
+            static int resend = 0;
+            static Dictionary<IMyTextPanel,bool> sendingBlocks = new Dictionary<IMyTextPanel, bool>();
             public static List<string> shows
             {
                 get
@@ -62,8 +68,11 @@ namespace IngameScript
                 GridBlocks.Database.Sort((a, b) => a.CustomName.CompareTo(b.CustomName));
                 foreach (IMyTextPanel panel in GridBlocks.Database)
                 {
+                    panel.ContentType = ContentType.TEXT_AND_IMAGE;
                     if(panel.CustomName.ToLower().Contains("unused") || panel.CustomName.ToLower().Contains("unassigned"))
                     {
+                        panel.CustomData = "-";
+                        panel.WriteText("-");
                         unused.Add(panel);
                         continue;
                     }
@@ -71,6 +80,128 @@ namespace IngameScript
                     if (!scenes.ContainsKey(address.show)) scenes.Add(address.show, new Dictionary<string, List<IMyTextPanel>>());
                     if (!scenes[address.show].ContainsKey(address.scene)) scenes[address.show].Add(address.scene, new List<IMyTextPanel>());
                     scenes[address.show][address.scene].Add(panel);
+                    panel.CustomName = address.ToBlockName();
+                }
+                GridInfo.IGC.SendBroadcastMessage("ReportShows", "");
+                GridInfo.AddBroadcastListener("ReportShows");
+            }
+            public static void Network()
+            {
+                if (sending)
+                {
+                    if(sendingBlocks.Count > 0)
+                    {
+                        if(resend > 0)
+                        {
+                            resend--;
+                            return;
+                        }
+                        var block = sendingBlocks.First();
+                        GridInfo.Echo("SceneCollection: Network: Sending: " + block.Key.CustomName);
+                        GridInfo.IGC.SendUnicastMessage(sendingTo, block.Key.CustomName+".CustomData", block.Key.CustomData);
+                        GridInfo.IGC.SendUnicastMessage(sendingTo, block.Key.CustomName+".Text", block.Key.GetText());
+                        resend = 100;
+                    } else sending = false;
+                }
+                List<MyIGCMessage> messages = GridInfo.CheckMessages();
+                foreach(MyIGCMessage message in messages)
+                {
+                    if(message.Tag == "ReportShows")
+                    {
+                        GridInfo.Echo("SceneCollection: Network: ReportShows");
+                        string shows = "";
+                        bool first = true;
+                        foreach(var show in SceneCollection.scenes)
+                        {
+                            if (first) first = false;
+                            else shows += ","; // separate shows with a comma (so we can split the string later)
+                            shows += show.Key + ":" + show.Value.Count;
+                        }
+                        GridInfo.IGC.SendUnicastMessage(message.Source, "Shows", shows);
+                    }
+                    else if(message.Tag == "Shows")
+                    {
+                        GridInfo.Echo("SceneCollection: Network: Shows");
+                        string[] shows = message.As<string>().Split(',');
+                        foreach(string show in shows)
+                        {
+                            string[] parts = show.Split(':');
+                            GridInfo.Echo("SceneCollection: Network: Shows: " + show);
+                            if (parts.Length == 2)
+                            {
+                                int blocks = 0;
+                                string name = parts[0].ToLower();
+                                if (int.TryParse(parts[1], out blocks))
+                                {
+                                    GridInfo.Echo("SceneCollection: Network: Shows: " + show + " - " + blocks);
+                                    if (!remoteShows.ContainsKey(name)) remoteShows.Add(name, new RemoteShow(parts[0],message.Source,blocks));
+                                    else remoteShows[name] = new RemoteShow(parts[0],message.Source, blocks);
+                                }
+                            }
+                        }
+                    }
+                    else if(message.Tag == "Download")
+                    {
+                        GridInfo.Echo("SceneCollection: Network: Download");
+                        // send the requested scene to the requester
+                        string show = message.As<string>();
+                        if (scenes.ContainsKey(show)) { sending = true; sendingTo = message.Source; sendingBlocks.Clear(); }
+                        else continue;
+                        foreach(var sceneGroup in scenes[show])
+                        {
+                            foreach(IMyTextPanel block in sceneGroup.Value)
+                            {
+                                GridInfo.Echo("SceneCollection: Network: Download: " + block.CustomName);
+                                //GridInfo.IGC.SendUnicastMessage(message.Source, block.CustomName+".CustomData", block.CustomData);
+                                //GridInfo.IGC.SendUnicastMessage(message.Source, block.CustomName+".Text", block.GetText());
+                                sendingBlocks.Add(block,false);
+                            }
+                        }
+                    }
+                    else if(message.Tag == "Recieved")
+                    {
+                        sendingBlocks.Remove(GridInfo.GridTerminalSystem.GetBlockWithName(message.As<string>()) as IMyTextPanel);
+                        resend = 0;
+                    }
+                    else if (message.Tag.StartsWith("DB:"))
+                    {
+                        GridInfo.Echo("SceneCollection: Network: Downloading: "+message.Tag);
+                        SceneAddress address = new SceneAddress(message.Tag);
+                        IMyTextPanel block = GridInfo.GridTerminalSystem.GetBlockWithName(address.ToBlockName()) as IMyTextPanel;
+                        if (block == null)
+                        {
+                            // get an unused block...
+                            if (unused.Count > 0)
+                            {
+                                block = unused[0];
+                                unused.RemoveAt(0);
+                            }
+                        }
+                        block.CustomName = address.ToBlockName();
+                        if (!scenes.ContainsKey(address.show)) scenes.Add(address.show, new Dictionary<string, List<IMyTextPanel>>());
+                        if (!scenes[address.show].ContainsKey(address.scene)) scenes[address.show].Add(address.scene, new List<IMyTextPanel>());
+                        scenes[address.show][address.scene].Add(block);
+                        if (address.custom_data) block.CustomData = message.As<string>();
+                        else block.WriteText(message.As<string>());
+                        if(block.CustomData != "-" && block.GetText() != "-") GridInfo.IGC.SendUnicastMessage(message.Source, "Recieved", block.CustomName);
+                    }
+                }
+            }
+            public static void DeleteShow(string show)
+            {
+                if(scenes.ContainsKey(show))
+                {
+                    foreach(var sceneGroup in scenes[show])
+                    {
+                        foreach(IMyTextPanel block in sceneGroup.Value)
+                        {
+                            block.CustomName = "DB:Unused";
+                            block.CustomData = "-";
+                            block.WriteText("-");
+                            unused.Add(block);
+                        }
+                    }
+                    scenes.Remove(show);
                 }
             }
             public static string GetScene(string show, string scene, int index, bool custom_data)
@@ -304,6 +435,7 @@ namespace IngameScript
                 }
                 public string ToBlockName()
                 {
+                    if(index < 10) return "DB:" + show + "." + scene + ".0" + index;
                     if (index >= 0) return "DB:" + show + "." + scene + "." + index;
                     return "TV." + show + "." + scene +".0";
                 }

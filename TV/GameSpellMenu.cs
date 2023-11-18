@@ -52,10 +52,10 @@ namespace IngameScript
             public override string HandleInput(string action)
             {
                 action = base.HandleInput(action);
-                GridInfo.Echo("GameSpellMenu:1:Action " + action);
+                //GridInfo.Echo("GameSpellMenu:1:Action " + action);
                 if (GameAction.GameSpells.CanCastSpell(action))
                 {
-                    GridInfo.Echo("GameSpellMenu:2:Cast " + action);
+                    //GridInfo.Echo("GameSpellMenu:2:Cast " + action);
                     GameAction.GameSpells.CastSpell(action);
                     //GameAction.GameVars.SetVar<bool>("encounter.playerTurn", null, false);
                     return "turn done";

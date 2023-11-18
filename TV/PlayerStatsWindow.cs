@@ -59,8 +59,8 @@ namespace IngameScript
                 Vector2 position = new Vector2(-Indent, Height / -2);
                 back.Size = new Vector2(width+Indent+30, Height+30);
                 back.Position = new Vector2(0-width-Indent-Indent,0);
-                GridInfo.Echo("back.Position: " + back.Position.ToString());
-                GridInfo.Echo("back.Size: " + back.Size.ToString());
+                //GridInfo.Echo("back.Position: " + back.Position.ToString());
+                //GridInfo.Echo("back.Size: " + back.Size.ToString());
                 screen.AddSprite(back);
                 title.Position = new Vector2(0-width,position.Y);
                 screen.AddSprite(title);

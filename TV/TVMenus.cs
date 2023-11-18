@@ -41,6 +41,8 @@ namespace IngameScript
                 menus.Add("sprite editor", new AnimatedSpriteEditMenu(width, actionBar));
                 menus.Add("options", new OptionMenu(width, actionBar));
                 menus.Add("games", new GamesMenu(width, actionBar));
+                menus.Add("download", new DownloadMenu(width, actionBar));
+                menus.Add("delete", new DeleteShowsMenu(width, actionBar));
             }
             // handle input
             public string HandleInput(string input)

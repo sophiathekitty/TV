@@ -22,15 +22,19 @@ namespace IngameScript
 {
     partial class Program
     {
-        public class MainMenu : ScreenMenu
-        {            
-            public MainMenu(ScreenActionBar actionBar) : base("TV Menu", 300, actionBar)
+        //----------------------------------------------------------------------
+        // RemoteShow
+        //----------------------------------------------------------------------
+        public class RemoteShow
+        {
+            public string name;
+            public long availableFrom;
+            public int blocks;
+            public RemoteShow(string name, long availableFrom, int blocks)
             {
-                AddLabel("Games");
-                AddLabel("Download");
-                AddLabel("Delete");
-                AddLabel("Editor");
-                AddLabel("Options");
+                this.name = name;
+                this.availableFrom = availableFrom;
+                this.blocks = blocks;
             }
         }
     }

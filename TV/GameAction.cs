@@ -75,7 +75,7 @@ namespace IngameScript
             // run the action
             public bool Run()
             {
-                GridInfo.Echo("GameAction: running " + Name);
+                //GridInfo.Echo("GameAction: running " + Name);
                 bool skipping = false;
                 bool ifwastrue = false;
                 foreach (string command in Commands)
@@ -129,7 +129,7 @@ namespace IngameScript
                     }
                     // skip commands until we hit an else or endif (or elseif)
                     if (skipping) continue;
-                    GridInfo.Echo("\n\nGameAction:\n" + cmd + " " + param + "\n");
+                    //GridInfo.Echo("\n\nGameAction:\n" + cmd + " " + param + "\n");
                     // conditional flow commands (that can start skipping)
                     if (cmd == "if")
                     {
@@ -138,13 +138,13 @@ namespace IngameScript
                         skipping = !res;
                         //GridInfo.Echo("GameAction: if("+res+") skipping: " + skipping);
                         if(res) ifwastrue = true;
-                        GridInfo.Echo("GameAction: if: " + param + " = " + ifwastrue);
+                        //GridInfo.Echo("GameAction: if: " + param + " = " + ifwastrue);
                     }
                     else if(cmd == "ifnot")
                     {
                         skipping = Compare(param);
                         if(!skipping) ifwastrue = true;
-                        GridInfo.Echo("GameAction: ifnot: " + param + " = " + ifwastrue);
+                        //GridInfo.Echo("GameAction: ifnot: " + param + " = " + ifwastrue);
                     }
                     // math commands
                     else if (cmd == "set")
@@ -155,11 +155,11 @@ namespace IngameScript
                     }
                     else if(cmd == "setto")
                     {
-                        GridInfo.Echo("GameAction: setto: " + param);
+                        //GridInfo.Echo("GameAction: setto: " + param);
                         string[] pair = param.Split('=');
                         //string value = GetValue(pair[1], me);
                         string value = GameVars.GetVarAs<string>(pair[1], me);
-                        GridInfo.Echo("GameAction: setto: " + pair[0] + " = " + value);
+                        //GridInfo.Echo("GameAction: setto: " + pair[0] + " = " + value);
                         GameVars.SetVar(pair[0], me, value);
                     }
                     else if(cmd == "add")
@@ -230,7 +230,7 @@ namespace IngameScript
                         /*
                         if(GameRPG.playerInventory.ContainsKey(param)) GameRPG.playerInventory[param] += count;
                         else GameRPG.playerInventory.Add(param, count);
-                        GridInfo.Echo("GameAction: give: " + param + " = " + GameRPG.playerInventory[param]);
+                        //GridInfo.Echo("GameAction: give: " + param + " = " + GameRPG.playerInventory[param]);
                         */
                         GameInventory.AddItem(param);
                     }
@@ -247,7 +247,7 @@ namespace IngameScript
                     }
                     else if(cmd == "csay")
                     {
-                        GridInfo.Echo("GameAction: csay: " + param);
+                        //GridInfo.Echo("GameAction: csay: " + param);
                         Game.Say(param);
                         continue;
                     }
@@ -303,7 +303,7 @@ namespace IngameScript
                     }
                     else if (cmd == "encounter")
                     {
-                        GridInfo.Echo("GameAction: encounter: " + param);
+                        //GridInfo.Echo("GameAction: encounter: " + param);
                         if(param == "map.encounter") param = Tilemap.GetEncounter(Game.GetPlayerX(),Game.GetPlayerY());
                         GameEncounters.StartEncounter(param,me);
                     }
@@ -325,7 +325,7 @@ namespace IngameScript
             // do a comparison
             bool Compare(string param)
             {
-                GridInfo.Echo("GameAction:0: Compare: " + param);
+                //GridInfo.Echo("GameAction:0: Compare: " + param);
                 bool result = false;
                 // do check
                 char opperator = '=';
@@ -333,7 +333,7 @@ namespace IngameScript
                 else if (param.Contains(">")) opperator = '>';
                 string[] pair = param.Split(opperator);
                 string value = GameVars.GetVarAs<string>(pair[0], me);
-                GridInfo.Echo("GameAction:1: Compare: " + pair[0] + " = " + value);
+                //GridInfo.Echo("GameAction:1: Compare: " + pair[0] + " = " + value);
                 float fvalue;
                 bool bvalue;
                 bool isFloat = float.TryParse(value, out fvalue);
@@ -345,7 +345,7 @@ namespace IngameScript
                     {
                         bparam = GameVars.GetVarAs<bool>(pair[1], me);
                     }
-                    GridInfo.Echo("GameAction:bool: Compare: " + bvalue + " " + opperator + " " + bparam);
+                    //GridInfo.Echo("GameAction:bool: Compare: " + bvalue + " " + opperator + " " + bparam);
                     return bvalue == bparam;
                 }
                 else if(isFloat)
@@ -355,14 +355,14 @@ namespace IngameScript
                     {
                         fparam = GameVars.GetVarAs<float>(pair[1], me);
                     }
-                    GridInfo.Echo("GameAction:float: Compare: " + fvalue + " " + opperator + " " + fparam);
+                    //GridInfo.Echo("GameAction:float: Compare: " + fvalue + " " + opperator + " " + fparam);
                     if (opperator == '=' && fvalue == fparam) result = true;
                     else if (opperator == '<' && fvalue < fparam) result = true;
                     else if (opperator == '>' && fvalue > fparam) result = true;
                 }
                 else
                 {
-                    GridInfo.Echo("GameAction:string: Compare: " + value + " " + opperator + " " + pair[1]);
+                    //GridInfo.Echo("GameAction:string: Compare: " + value + " " + opperator + " " + pair[1]);
                     // string comparison
                     if (opperator == '=' && value == pair[1]) result = true;
                 }

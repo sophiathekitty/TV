@@ -126,14 +126,14 @@ namespace IngameScript
                 {
                     GetBlocks();
                 }
-                GridInfo.Echo("GetSurfaceCustomData: " + key);
+                //GridInfo.Echo("GetSurfaceCustomData: " + key);
                 if (surfaceProviders.ContainsKey(key)) return surfaceProviders[key].CustomData;
-                GridInfo.Echo("GetSurfaceCustomData: " + key + " searching....");
+                //GridInfo.Echo("GetSurfaceCustomData: " + key + " searching....");
                 foreach(var block in surfaceProviders)
                 {
                     if(block.Key.Contains(key)) return block.Value.CustomData;
                 }
-                GridInfo.Echo("GetSurfaceCustomData: " + key + " not found");
+                //GridInfo.Echo("GetSurfaceCustomData: " + key + " not found");
                 return "";
             }
             // set surface custom data

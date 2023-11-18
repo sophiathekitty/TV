@@ -44,7 +44,9 @@
     <Compile Include="AnimatedSpriteEditMenu.cs" />
     <Compile Include="BattleMenu.cs" />
     <Compile Include="BattleWindow.cs" />
+    <Compile Include="DeleteShowsMenu.cs" />
     <Compile Include="DialogWindow.cs" />
+    <Compile Include="DownloadMenu.cs" />
     <Compile Include="GameAction.cs" />
     <Compile Include="GameActionMenu.cs" />
     <Compile Include="GameItem.cs" />
@@ -63,6 +65,8 @@
     <Compile Include="npc.cs" />
     <Compile Include="OptionMenu.cs" />
     <Compile Include="PlayerStatsWindow.cs" />
+    <Compile Include="ProgramScreen.cs" />
+    <Compile Include="RemoteShow.cs" />
     <Compile Include="SceneCollection.cs" />
     <Compile Include="ScreenActionBar.cs" />
     <Compile Include="AnimatedScene.cs" />
