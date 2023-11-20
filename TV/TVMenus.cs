@@ -114,6 +114,7 @@ namespace IngameScript
             {
                 if(!menus.ContainsKey(currentMenu)) currentMenu = "main";
                 menus[currentMenu].AddToScreen(screen);
+                actionBar.SetActions(menus[currentMenu].menuScrollActions);
             }
         }
     }

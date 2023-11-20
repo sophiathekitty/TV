@@ -34,7 +34,7 @@ namespace IngameScript
             }
             public override void Draw()
             {
-                showInfo.Data = "Database Info\nShows: " + SceneCollection.shows.Count + "\nGames:" + SceneCollection.games.Count + "\nMedia:";
+                showInfo.Data = "Database:\nShows: " + SceneCollection.shows.Count + "\nGames:" + SceneCollection.games.Count + "\nMedia:";
                 int used = 0;
                 foreach (var show in SceneCollection.scenes)
                 {
@@ -42,7 +42,7 @@ namespace IngameScript
                     used += show.Value.Count;
                 }
                 int total = SceneCollection.unused.Count + used;
-                showInfo.Data += "\nBlocks:\nUsed: " + used + "/" + total + "\nAvailable:" + SceneCollection.unused.Count+"\n\nAvailable For Download:";
+                showInfo.Data += "\nBlocks:\nUsed: " + used + "/" + total + "\nAvailable:" + SceneCollection.unused.Count+"\n\nDownload:";
                 foreach(var show in SceneCollection.remoteShows)
                 {
                     showInfo.Data += "\n" + show.Key + ": " + show.Value.blocks + " blks";

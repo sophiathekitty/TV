@@ -31,6 +31,7 @@ namespace IngameScript
             int GetPlayerX();
             int GetPlayerY();
             void SaveGame();
+            void ShowEndScreen(string message);
         }
     }
 }

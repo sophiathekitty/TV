@@ -41,7 +41,7 @@ namespace IngameScript
                 else
                 {
                     // sold black background
-                    _background = new ScreenSprite(ScreenSprite.ScreenSpriteAnchor.Center, Vector2.Zero, 0, new Vector2(1000,1000), Color.Black, "", "SquareSimple", TextAlignment.CENTER, SpriteType.TEXTURE);
+                    _background = new ScreenSprite(ScreenSprite.ScreenSpriteAnchor.Center, Vector2.Zero, 0, new Vector2(5000,1000), Color.Black, "", "SquareSimple", TextAlignment.CENTER, SpriteType.TEXTURE);
                 }
                 _enemy = new ScreenSprite(ScreenSprite.ScreenSpriteAnchor.Center, new Vector2(x,y-60), Tilemap.fontSize, Vector2.Zero, Color.White, "Monospace", enemy, TextAlignment.CENTER, SpriteType.TEXT);
             }

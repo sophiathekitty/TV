@@ -47,6 +47,7 @@
     <Compile Include="DeleteShowsMenu.cs" />
     <Compile Include="DialogWindow.cs" />
     <Compile Include="DownloadMenu.cs" />
+    <Compile Include="EndScreen.cs" />
     <Compile Include="GameAction.cs" />
     <Compile Include="GameActionMenu.cs" />
     <Compile Include="GameItem.cs" />

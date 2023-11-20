@@ -82,6 +82,7 @@ namespace IngameScript
             GameSpellMenu gameSpellMenu;
             PlayerStatsWindow playerStatsWindow;
             DialogWindow dialogWindow;
+            EndScreen endScreen;
             string controls = "< v ^ > Menu";
             string NothingToSell = "You have nothing to sell.";
             List<string> systemActions = new List<string>() { "Items", "Spells" };
@@ -528,6 +529,7 @@ namespace IngameScript
                 if(shopMenu != null) shopMenu.RemoveFromScreen(screen);
                 if(battleMenu != null) battleMenu.RemoveFromScreen(screen);
                 if(battleWindow != null) battleWindow.RemoveFromScreen(screen);
+                if(endScreen != null) endScreen.RemoveFromScreen(screen);
             }
             //-------------------------------------------------------------------
             //
@@ -1218,6 +1220,12 @@ namespace IngameScript
             public int GetPlayerY()
             {
                 return playerY;
+            }
+            public void ShowEndScreen(string message)
+            {
+                GridInfo.Echo("ShowEndScreen: " + message);
+                endScreen = new EndScreen(message,actionBar);
+                endScreen.AddToScreen(tv);
             }
             //-------------------------------------------------------------------
             // IGameInventory

@@ -311,6 +311,11 @@ namespace IngameScript
                     {
                         GameEncounters.EndEncounter();
                     }
+                    else if (cmd == "endscreen")
+                    {
+                        Game.ShowEndScreen(param);
+                        return false;
+                    }
                     else if(cmd == "exit")
                     {
                         return true;

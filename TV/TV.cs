@@ -357,7 +357,7 @@ namespace IngameScript
                         game.Update();
                         return "";
                     }
-                    else if(action == "quit game")
+                    else if(action.StartsWith("quit"))
                     {
                         StopSound();
                         game.RemoveFromScreen(this);
