@@ -158,12 +158,13 @@ namespace IngameScript
                 {
                     // no more shows to play
                     // restart the show list
+                    //GridInfo.Echo("TV:PlayRandomShow:NoMoreShows");
                     List<string> availableShows = SceneCollection.shows.ToList();
                     shows.Clear();
                     foreach (string show in availableShows)
                     {
                         //GridInfo.Echo("TV:Show: " + show);
-                        if(show != currentShow.Name) shows.Add(show);
+                        if(currentShow == null || show != currentShow.Name) shows.Add(show);
                     }
                     if(shows.Count > 0) PlayRandomShow();
                 }
@@ -359,15 +360,21 @@ namespace IngameScript
                     }
                     else if(action.StartsWith("quit"))
                     {
+                        //GridInfo.Echo("TV:Quit");
                         StopSound();
                         game.RemoveFromScreen(this);
                         game = null;
+                        //GridInfo.Echo("TV:Quit:GameRemoved");
                         actionBar.RemoveFromScreen(this);
+                        //GridInfo.Echo("TV:Quit:ActionBarRemoved");
                         menus.Hide();
+                        //GridInfo.Echo("TV:Quit:MenusHidden");
                         barVisible = false;
                         menuVisible = false;
                         barTimeout = 0;
+                        //GridInfo.Echo("TV:Quit:BarHidden");
                         PlayRandomShow();
+                        //GridInfo.Echo("TV:Quit:Done");
                         return "";
                     }
                     return action;

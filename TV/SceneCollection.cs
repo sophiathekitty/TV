@@ -115,7 +115,12 @@ namespace IngameScript
                         {
                             if (first) first = false;
                             else shows += ","; // separate shows with a comma (so we can split the string later)
-                            shows += show.Key + ":" + show.Value.Count;
+                            int blks = 0;
+                            foreach(var scene in show.Value)
+                            {
+                                blks += scene.Value.Count;
+                            }
+                            shows += show.Key + ":" + blks;
                         }
                         GridInfo.IGC.SendUnicastMessage(message.Source, "Shows", shows);
                     }
@@ -180,10 +185,10 @@ namespace IngameScript
                         block.CustomName = address.ToBlockName();
                         if (!scenes.ContainsKey(address.show)) scenes.Add(address.show, new Dictionary<string, List<IMyTextPanel>>());
                         if (!scenes[address.show].ContainsKey(address.scene)) scenes[address.show].Add(address.scene, new List<IMyTextPanel>());
-                        scenes[address.show][address.scene].Add(block);
+                        if (!scenes[address.show][address.scene].Contains(block)) scenes[address.show][address.scene].Add(block);
                         if (address.custom_data) block.CustomData = message.As<string>();
                         else block.WriteText(message.As<string>());
-                        if(block.CustomData != "-" && block.GetText() != "-") GridInfo.IGC.SendUnicastMessage(message.Source, "Recieved", block.CustomName);
+                        if (block.CustomData != "-" && block.GetText() != "-") GridInfo.IGC.SendUnicastMessage(message.Source, "Recieved", block.CustomName);
                     }
                 }
             }

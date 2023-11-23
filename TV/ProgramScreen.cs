@@ -38,8 +38,13 @@ namespace IngameScript
                 int used = 0;
                 foreach (var show in SceneCollection.scenes)
                 {
-                    showInfo.Data += "\n" + show.Key + ": " + show.Value.Count + " blks";
-                    used += show.Value.Count;
+                    int blocks = 0;
+                    foreach (var scene in show.Value)
+                    {
+                        blocks += scene.Value.Count;
+                    }
+                    showInfo.Data += "\n" + show.Key + ": " + blocks + " blks";
+                    used += blocks;
                 }
                 int total = SceneCollection.unused.Count + used;
                 showInfo.Data += "\nBlocks:\nUsed: " + used + "/" + total + "\nAvailable:" + SceneCollection.unused.Count+"\n\nDownload:";

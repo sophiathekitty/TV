@@ -518,6 +518,7 @@ namespace IngameScript
             // remove from screen
             public void RemoveFromScreen(Screen screen)
             {
+                //GridInfo.Echo("game: remove from screen");
                 map.RemoveFromScreen(screen);
                 screen.RemoveSprite(player);
                 if(gameTitleScreen != null) gameTitleScreen.RemoveFromScreen(screen);
@@ -530,6 +531,7 @@ namespace IngameScript
                 if(battleMenu != null) battleMenu.RemoveFromScreen(screen);
                 if(battleWindow != null) battleWindow.RemoveFromScreen(screen);
                 if(endScreen != null) endScreen.RemoveFromScreen(screen);
+                //GridInfo.Echo("game: remove from screen: done");
             }
             //-------------------------------------------------------------------
             //
