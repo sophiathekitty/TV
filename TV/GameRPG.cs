@@ -976,6 +976,7 @@ namespace IngameScript
                     //GridInfo.Echo("SetValue: encounter: " + name + " = " + value);
                     // set encounter vars
                     if(name == "over") encounterOver = bool.Parse(value);
+                    else if (name == "playerTurn") isPlayerTurn = bool.Parse(value);
                     if (encounterOver && battleWindow != null) battleWindow.HideEnemy();
                 }
                 else
@@ -1113,6 +1114,13 @@ namespace IngameScript
                         }
                     }
                     return valueInt.ToString();
+                }
+                else if (objectName == "playerGear")
+                {
+                    if(playerGear.ContainsKey(name))
+                    {
+                        return playerGear[name];
+                    }
                 }
                 else
                 {
@@ -1356,12 +1364,23 @@ namespace IngameScript
             //-------------------------------------------------------------------
             // IGameEncounter
             //-------------------------------------------------------------------
+            int lastEenemy = 0;
             public void StartEncounter(string enemyGroup, npc npc = null)
             {
+                enemyGroup = enemyGroup.Trim();
                 promptNPC = npc;
-                string[] enemies = enemyGroup.Split(',');
-                Random rnd = new Random();
+                string[] enemies = (enemyGroup + "," + enemyGroup + "," + enemyGroup + "," + enemyGroup).Split(',');
+                //Random rnd = new Random();
+                //rnd = new Random(enemies.Length+DateTime.Now.Millisecond);
                 int enemyIndex = rnd.Next(0, enemies.Length);
+                int i = 0;
+                while(enemyIndex == lastEenemy && i++ < 3)
+                {
+                    //GridInfo.Echo("StartEncounter: " + enemies[enemyIndex] + " (" + enemyIndex + "/" + enemies.Length + ") "+lastEenemy);
+                    enemyIndex = rnd.Next(0, enemies.Length);
+                }
+                lastEenemy = enemyIndex;
+                //GridInfo.Echo("StartEncounter: " + enemies[enemyIndex] +" ("+enemyIndex+"/"+enemies.Length+") " +enemyGroup);
                 string enemy = LoadEnemy(enemies[enemyIndex]);
                 string battleBack = LoadBattleBack();
                 if(enemy == "") 
@@ -1412,7 +1431,11 @@ namespace IngameScript
                             if (statParts.Length != 2) continue;
                             int value = 0;
                             if (int.TryParse(statParts[1].Trim(), out value)) enemyStats.Add(statParts[0].Trim(), value);
-                            else if (statParts[0].Trim() == "pattern") enemyPattern = statParts[1].Split(',');
+                            else if (statParts[0].Trim() == "pattern") 
+                            { 
+                                enemyPattern = statParts[1].Split(';');
+                                GridInfo.Echo("LoadEnemy: " + enemy + " pattern: " + statParts[1]);
+                            }
                         }
                         sprite = parts[1].Trim();
                         break;
@@ -1448,6 +1471,7 @@ namespace IngameScript
             {
                 return battleMenu != null;
             }
+            Random rnd = new Random(DateTime.Now.Millisecond);
             void DoEnemyTurn()
             {
                 if(!IsInEncounter() || isPlayerTurn || dialogWindow != null) return;
@@ -1461,8 +1485,10 @@ namespace IngameScript
                 }
                 else
                 {
-                    Random rnd = new Random();
-                    int enemyIndex = rnd.Next(0, enemyPattern.Length);
+                    //Random rnd = new Random();
+                    int enemyIndex = rnd.Next(0, enemyPattern.Length+1);
+                    if (enemyIndex >= enemyPattern.Length) enemyIndex = enemyPattern.Length - 1;
+                    GridInfo.Echo("EnemyTurn: " + enemyPattern[enemyIndex]+" ("+enemyIndex+"/"+enemyPattern.Length+")");
                     if (gameLogic.ContainsKey(enemyPattern[enemyIndex])) gameLogic[enemyPattern[enemyIndex]].Run();
                     else GridInfo.Echo("EnemyTurn: " + enemyPattern[enemyIndex] + " not found");
                 }

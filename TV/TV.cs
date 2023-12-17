@@ -116,6 +116,11 @@ namespace IngameScript
             }
             void PlayGame(string gameName)
             {
+                if (idleScene != null)
+                {
+                    idleScene.RemoveFromScreen(this);
+                    isIdle = false;
+                }
                 //GridInfo.Echo("TV:Games");
                 if (currentScene != null) currentScene.RemoveFromScreen(this);
                 //GridInfo.Echo("TV:Games:SceneRemoved");

@@ -144,7 +144,7 @@ namespace IngameScript
                     {
                         skipping = Compare(param);
                         if(!skipping) ifwastrue = true;
-                        //GridInfo.Echo("GameAction: ifnot: " + param + " = " + ifwastrue);
+                        //GridInfo.Echo("GameAction: ifnot: " + param + " == " + ifwastrue);
                     }
                     // math commands
                     else if (cmd == "set")
